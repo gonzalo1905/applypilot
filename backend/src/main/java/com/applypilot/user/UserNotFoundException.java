@@ -1,0 +1,12 @@
+package com.applypilot.user;
+
+import com.applypilot.common.error.ApiException;
+import org.springframework.http.HttpStatus;
+
+public class UserNotFoundException extends ApiException {
+
+	public UserNotFoundException() {
+		super(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "User not found");
+	}
+
+}
