@@ -24,6 +24,47 @@ class PdfBoxTextExtractorTest {
 	}
 
 	@Test
+	void readsOnlyTheFirstPagesOfALongDocument() {
+		byte[] pdf = TestPdfs.withPages(PdfBoxTextExtractor.MAX_PAGES + 1, number -> "page-" + number + "-end");
+
+		String text = extractor.extractText(pdf);
+
+		assertThat(text).contains("page-1-end").contains("page-" + PdfBoxTextExtractor.MAX_PAGES + "-end");
+		assertThat(text).doesNotContain("page-" + (PdfBoxTextExtractor.MAX_PAGES + 1) + "-end");
+	}
+
+	@Test
+	void truncatesVeryLongText() {
+		// 30 pages of 7,000 characters each: more than the limit.
+		byte[] pdf = TestPdfs.withPages(PdfBoxTextExtractor.MAX_PAGES, number -> "a".repeat(7_000));
+
+		assertThat(extractor.extractText(pdf)).hasSize(PdfBoxTextExtractor.MAX_CHARACTERS);
+	}
+
+	@Test
+	void rejectsAPdfThatNeedsAPasswordToOpen() {
+		byte[] locked = TestPdfs.encrypted("Secret CV", "user-secret", true);
+
+		assertThatThrownBy(() -> extractor.extractText(locked)).isInstanceOf(InvalidRequestException.class)
+			.hasMessage("Password-protected PDFs are not supported");
+	}
+
+	@Test
+	void rejectsAPdfThatForbidsCopyingItsText() {
+		byte[] restricted = TestPdfs.encrypted("Restricted CV", "", false);
+
+		assertThatThrownBy(() -> extractor.extractText(restricted)).isInstanceOf(InvalidRequestException.class)
+			.hasMessage("This PDF does not allow its text to be read");
+	}
+
+	@Test
+	void readsAnEncryptedPdfThatOpensFreelyAndAllowsCopying() {
+		byte[] open = TestPdfs.encrypted("Open CV", "", true);
+
+		assertThat(extractor.extractText(open)).isEqualTo("Open CV");
+	}
+
+	@Test
 	void rejectsBytesThatOnlyPretendToBeAPdf() {
 		byte[] fake = "%PDF-1.7 this is not really a pdf".getBytes(StandardCharsets.US_ASCII);
 
