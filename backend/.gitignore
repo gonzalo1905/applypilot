@@ -3,3 +3,6 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 HELP.md
+
+# Uploaded CVs (local file storage)
+storage/
