@@ -146,6 +146,124 @@ a {
   width: 100%;
 }
 
+.btn-danger {
+  background: var(--color-danger);
+  color: var(--color-surface);
+}
+
+.btn-danger-ghost {
+  background: transparent;
+  border-color: var(--color-border);
+  color: var(--color-danger);
+
+  &:hover:not(:disabled) {
+    background: var(--color-danger-surface);
+  }
+}
+
+/* Small square button holding a single symbol (add, close). */
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 1.125rem;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--color-border);
+    color: var(--color-text);
+  }
+}
+
+/* A button that looks like a link, for low-emphasis actions inside text. */
+.link-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ---------- Modal dialog (native <dialog>) ---------- */
+
+.dialog {
+  width: min(640px, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-card);
+
+  &::backdrop {
+    background: rgb(8 10 16 / 60%);
+  }
+}
+
+.dialog-body {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.5rem;
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  h2 {
+    font-size: 1.25rem;
+  }
+}
+
+.dialog-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* ---------- Simple content page (profile) ---------- */
+
+.page {
+  display: grid;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+
+  h2 {
+    font-size: 1.125rem;
+  }
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
 /* ---------- Form fields ---------- */
 
 .field {
@@ -157,7 +275,9 @@ a {
     font-weight: 600;
   }
 
-  input {
+  input,
+  select,
+  textarea {
     width: 100%;
     padding: 0.65rem 0.8rem;
     border: 1px solid var(--color-border);

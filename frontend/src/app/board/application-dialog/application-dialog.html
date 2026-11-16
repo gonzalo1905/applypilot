@@ -1,0 +1,141 @@
+<dialog
+  #dialog
+  class="dialog"
+  aria-labelledby="application-dialog-title"
+  (close)="onNativeClose()"
+  (click)="onBackdropClick($event)"
+>
+  <form class="dialog-body" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <header class="dialog-header">
+      <h2 id="application-dialog-title">{{ isEditing() ? 'Edit application' : 'Add application' }}</h2>
+      <button class="icon-btn" type="button" aria-label="Close" (click)="close()">×</button>
+    </header>
+
+    @if (errorMessage(); as message) {
+      <p class="alert-error" role="alert">{{ message }}</p>
+    }
+
+    <div class="grid">
+      <div class="field">
+        <label for="company">Company</label>
+        <input
+          id="company"
+          type="text"
+          formControlName="company"
+          autocomplete="organization"
+          [class.invalid]="form.controls.company.touched && form.controls.company.invalid"
+        />
+        @if (form.controls.company.touched && form.controls.company.invalid) {
+          <span class="field-error">Enter the company (up to 120 characters).</span>
+        } @else if (serverErrors()['company']; as message) {
+          <span class="field-error">Company {{ message }}.</span>
+        }
+      </div>
+
+      <div class="field">
+        <label for="roleTitle">Role</label>
+        <input
+          id="roleTitle"
+          type="text"
+          formControlName="roleTitle"
+          [class.invalid]="form.controls.roleTitle.touched && form.controls.roleTitle.invalid"
+        />
+        @if (form.controls.roleTitle.touched && form.controls.roleTitle.invalid) {
+          <span class="field-error">Enter the role (up to 160 characters).</span>
+        } @else if (serverErrors()['roleTitle']; as message) {
+          <span class="field-error">Role {{ message }}.</span>
+        }
+      </div>
+
+      <div class="field">
+        <label for="status">Status</label>
+        <select id="status" formControlName="status">
+          @for (column of columns; track column.status) {
+            <option [value]="column.status">{{ column.title }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="appliedAt">Applied on</label>
+        <input id="appliedAt" type="date" formControlName="appliedAt" />
+        @if (serverErrors()['appliedAt']; as message) {
+          <span class="field-error">Date {{ message }}.</span>
+        }
+      </div>
+
+      <div class="field">
+        <label for="location">Location</label>
+        <input id="location" type="text" formControlName="location" placeholder="Lima, Peru" />
+        @if (form.controls.location.invalid) {
+          <span class="field-error">Use up to 120 characters.</span>
+        }
+      </div>
+
+      <div class="field">
+        <label for="workMode">Work mode</label>
+        <select id="workMode" formControlName="workMode">
+          <option value="">Not specified</option>
+          @for (mode of workModes; track mode[0]) {
+            <option [value]="mode[0]">{{ mode[1] }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field wide">
+        <label for="jobUrl">Job posting URL</label>
+        <input
+          id="jobUrl"
+          type="url"
+          formControlName="jobUrl"
+          placeholder="https://"
+          [class.invalid]="form.controls.jobUrl.touched && form.controls.jobUrl.invalid"
+        />
+        @if (form.controls.jobUrl.touched && form.controls.jobUrl.invalid) {
+          <span class="field-error">Enter a link that starts with http:// or https://.</span>
+        } @else if (serverErrors()['jobUrl']; as message) {
+          <span class="field-error">URL {{ message }}.</span>
+        }
+      </div>
+
+      <div class="field wide">
+        <label for="salaryNote">Salary</label>
+        <input id="salaryNote" type="text" formControlName="salaryNote" placeholder="USD 3,000 / month" />
+        @if (form.controls.salaryNote.invalid) {
+          <span class="field-error">Use up to 120 characters.</span>
+        }
+      </div>
+
+      <div class="field wide">
+        <label for="notes">Notes</label>
+        <textarea id="notes" formControlName="notes" rows="4"></textarea>
+        @if (form.controls.notes.invalid) {
+          <span class="field-error">Use up to 5000 characters.</span>
+        }
+      </div>
+    </div>
+
+    <footer class="dialog-footer">
+      @if (confirmingDelete()) {
+        <p class="confirm-text" role="alert">Delete this application? This cannot be undone.</p>
+        <button class="btn btn-ghost" type="button" [disabled]="saving()" (click)="cancelDelete()">
+          Keep it
+        </button>
+        <button class="btn btn-danger" type="button" [disabled]="saving()" (click)="confirmDelete()">
+          Delete
+        </button>
+      } @else {
+        @if (isEditing()) {
+          <button class="btn btn-danger-ghost" type="button" [disabled]="saving()" (click)="askToDelete()">
+            Delete
+          </button>
+        }
+        <span class="spacer"></span>
+        <button class="btn btn-ghost" type="button" (click)="close()">Cancel</button>
+        <button class="btn btn-primary" type="submit" [disabled]="saving()">
+          {{ saving() ? 'Saving…' : isEditing() ? 'Save changes' : 'Add application' }}
+        </button>
+      }
+    </footer>
+  </form>
+</dialog>
