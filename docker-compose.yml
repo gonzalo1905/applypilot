@@ -1,0 +1,25 @@
+# Local development infrastructure. Values come from `.env` (see `.env.example`),
+# with safe local defaults so `docker compose up -d` works out of the box.
+name: applypilot
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: applypilot-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-applypilot}
+      POSTGRES_USER: ${POSTGRES_USER:-applypilot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-applypilot}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres_data:
