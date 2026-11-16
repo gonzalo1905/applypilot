@@ -10,7 +10,7 @@ LLM to help tailor CVs and prepare for interviews.
 
 | Layer    | Technology                                                    |
 |----------|---------------------------------------------------------------|
-| Backend  | Java 21, Spring Boot 3.5, Spring Security (JWT), Spring Data JPA, Flyway |
+| Backend  | Java 21, Spring Boot 4.1, Spring Security (JWT), Spring Data JPA, Flyway |
 | Database | PostgreSQL 16 (Docker Compose)                                |
 | Frontend | Angular 22 (standalone components, signals), TypeScript strict, SCSS |
 | Testing  | JUnit 5, Mockito, Testcontainers, Vitest                      |

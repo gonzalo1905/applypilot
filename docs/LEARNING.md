@@ -7,7 +7,7 @@ Claude Code concept was practiced. Each stage ends with three interview-style qu
 
 ### What was built
 
-- A monorepo with `backend/` (Spring Boot 3.5, Java 21, Maven wrapper) and `frontend/`
+- A monorepo with `backend/` (Spring Boot 4.1, Java 21, Maven wrapper) and `frontend/`
   (Angular 22, standalone components, strict TypeScript, SCSS).
 - `docker-compose.yml` running PostgreSQL 16 with a named volume and a healthcheck.
 - `.gitignore`, `.gitattributes`, and `.env.example` (the real `.env` is git-ignored).
@@ -29,9 +29,13 @@ Claude Code concept was practiced. Each stage ends with three interview-style qu
   through history.
 - **`.gitattributes`.** Windows and Unix use different line endings. Normalizing them avoids
   noisy diffs and keeps `mvnw` runnable inside Linux containers.
-- **Spring Boot 3.5 on Java 21.** Java 21 is an LTS release (records, pattern matching, virtual
-  threads). Spring Boot 4 already exists; staying on 3.5 was a deliberate scope choice, and the
-  upgrade is a good candidate for a later stage.
+- **Spring Boot 4.1 on Java 21.** Java 21 is an LTS release (records, pattern matching, virtual
+  threads). The project was first scaffolded on Spring Boot 3.5 and moved to 4.1 before any
+  feature code existed, because 3.x is no longer the current line and Spring Initializr has
+  stopped offering it. Upgrading an empty skeleton costs one commit; upgrading later would mean
+  touching every feature. Visible differences in 4.x: modular starters
+  (`spring-boot-starter-webmvc` instead of `-web`, one test starter per technology), Spring
+  Framework 7, Spring Security 7 and Jackson 3.
 
 ### Claude Code concepts practiced
 

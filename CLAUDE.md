@@ -5,7 +5,7 @@ stages; see `docs/LEARNING.md` for what each stage added and why.
 
 ## Stack
 
-- Backend: Java 21, Spring Boot 3.5, Spring Security (stateless JWT), Spring Data JPA, Flyway, PostgreSQL 16
+- Backend: Java 21, Spring Boot 4.1, Spring Security (stateless JWT), Spring Data JPA, Flyway, PostgreSQL 16
 - Frontend: Angular 22, standalone components, signals, TypeScript strict, SCSS (no UI library)
 - Tests: JUnit 5 + Mockito, Testcontainers (PostgreSQL), Vitest
 - Infra: Docker Compose for local PostgreSQL
