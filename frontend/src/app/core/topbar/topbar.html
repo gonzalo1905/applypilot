@@ -1,0 +1,18 @@
+<header class="topbar">
+  <a class="brand" routerLink="/board">
+    <span class="brand-mark" aria-hidden="true">AP</span> ApplyPilot
+  </a>
+
+  <nav class="nav" aria-label="Main">
+    <a routerLink="/board" routerLinkActive="active">Board</a>
+    <a routerLink="/profile" routerLinkActive="active">Profile</a>
+  </nav>
+
+  <div class="account">
+    @if (user(); as currentUser) {
+      <span class="avatar" aria-hidden="true">{{ initials() }}</span>
+      <span class="user-name" data-testid="user-name">{{ currentUser.fullName }}</span>
+    }
+    <button class="btn btn-ghost" type="button" (click)="logout()">Log out</button>
+  </div>
+</header>

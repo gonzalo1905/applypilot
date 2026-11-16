@@ -1,47 +1,56 @@
-import { Component, computed, inject } from '@angular/core';
+import { CdkDrag, CdkDragDrop, CdkDropList, CdkDropListGroup } from '@angular/cdk/drag-drop';
+import { DatePipe } from '@angular/common';
+import { Component, inject, signal } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
+import { Topbar } from '../core/topbar/topbar';
+import { ApplicationDialog } from './application-dialog/application-dialog';
+import { ApplicationStatus, JobApplication, WORK_MODE_LABELS } from './application.models';
+import { BoardStore } from './board.store';
 
-interface BoardColumn {
-  /** Stable id, also used as the CSS modifier for the column's accent color. */
-  id: 'saved' | 'applied' | 'interview' | 'offer' | 'rejected';
-  title: string;
-  emptyHint: string;
+/** What the dialog is editing: an existing card, or a new one for a given column. */
+interface DialogState {
+  application: JobApplication | null;
+  status: ApplicationStatus;
 }
-
-const COLUMNS: readonly BoardColumn[] = [
-  { id: 'saved', title: 'Saved', emptyHint: 'Roles you want to apply to.' },
-  { id: 'applied', title: 'Applied', emptyHint: 'Applications you have sent.' },
-  { id: 'interview', title: 'Interview', emptyHint: 'Processes with interviews scheduled.' },
-  { id: 'offer', title: 'Offer', emptyHint: 'Offers you have received.' },
-  { id: 'rejected', title: 'Rejected', emptyHint: 'Closed processes, kept for reference.' },
-];
 
 @Component({
   selector: 'app-board',
+  imports: [CdkDropListGroup, CdkDropList, CdkDrag, DatePipe, Topbar, ApplicationDialog],
+  providers: [BoardStore],
   templateUrl: './board.html',
   styleUrl: './board.scss',
 })
 export class Board {
   private readonly auth = inject(AuthService);
+  protected readonly store = inject(BoardStore);
 
-  protected readonly columns = COLUMNS;
-  protected readonly user = this.auth.user;
-  protected readonly initials = computed(() =>
-    (this.user()?.fullName ?? '')
-      .split(/\s+/)
-      .filter((part) => part.length > 0)
-      .slice(0, 2)
-      .map((part) => part.charAt(0).toUpperCase())
-      .join(''),
-  );
+  protected readonly workModeLabels = WORK_MODE_LABELS;
+  protected readonly dialog = signal<DialogState | null>(null);
 
   constructor() {
     // Confirms with the API that the stored token is still valid and refreshes the profile.
     // A 401 is handled by the interceptor, which logs the user out.
     this.auth.refreshUser().subscribe({ error: () => undefined });
+    this.store.load();
   }
 
-  protected logout(): void {
-    this.auth.logout();
+  protected openCreate(status: ApplicationStatus = 'SAVED'): void {
+    this.dialog.set({ application: null, status });
+  }
+
+  protected openEdit(application: JobApplication): void {
+    this.dialog.set({ application, status: application.status });
+  }
+
+  protected closeDialog(): void {
+    this.dialog.set(null);
+  }
+
+  /** A card was dropped: the drop list's data is the column, the item's data is the card. */
+  protected drop(event: CdkDragDrop<ApplicationStatus, ApplicationStatus, JobApplication>): void {
+    if (event.previousContainer === event.container && event.previousIndex === event.currentIndex) {
+      return;
+    }
+    this.store.move(event.item.data.id, event.container.data, event.currentIndex);
   }
 }

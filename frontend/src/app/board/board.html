@@ -1,37 +1,98 @@
 <div class="board-page">
-  <header class="topbar">
-    <span class="brand"><span class="brand-mark" aria-hidden="true">AP</span> ApplyPilot</span>
-
-    <div class="account">
-      @if (user(); as currentUser) {
-        <span class="avatar" aria-hidden="true">{{ initials() }}</span>
-        <span class="user-name" data-testid="user-name">{{ currentUser.fullName }}</span>
-      }
-      <button class="btn btn-ghost" type="button" (click)="logout()">Log out</button>
-    </div>
-  </header>
+  <app-topbar />
 
   <main class="board-main">
     <div class="board-heading">
-      <h1>Your applications</h1>
-      <p>Track every application from first interest to final answer.</p>
+      <div>
+        <h1>Your applications</h1>
+        <p>Track every application from first interest to final answer.</p>
+      </div>
+      <button class="btn btn-primary" type="button" (click)="openCreate()">Add application</button>
     </div>
 
-    <section class="board" aria-label="Applications board">
-      @for (column of columns; track column.id) {
-        <article class="column" [attr.data-status]="column.id" [attr.aria-label]="column.title">
-          <header class="column-header">
-            <span class="status-dot" aria-hidden="true"></span>
-            <h2>{{ column.title }}</h2>
-            <span class="count" aria-label="0 applications">0</span>
-          </header>
+    @if (store.actionError(); as message) {
+      <p class="alert-error action-error" role="alert">
+        <span>{{ message }}</span>
+        <button class="link-btn" type="button" (click)="store.dismissActionError()">Dismiss</button>
+      </p>
+    }
 
-          <div class="column-empty">
-            <p class="empty-title">No applications yet</p>
-            <p>{{ column.emptyHint }}</p>
-          </div>
-        </article>
-      }
-    </section>
+    @if (store.loading()) {
+      <p class="board-status" role="status">Loading your applications…</p>
+    } @else if (store.loadError(); as message) {
+      <div class="board-status" role="alert">
+        <p>{{ message }}</p>
+        <button class="btn btn-ghost" type="button" (click)="store.load()">Try again</button>
+      </div>
+    } @else {
+      <section class="board" aria-label="Applications board" cdkDropListGroup>
+        @for (column of store.columns(); track column.status) {
+          <article class="column" [attr.data-status]="column.status" [attr.aria-label]="column.title">
+            <header class="column-header">
+              <span class="status-dot" aria-hidden="true"></span>
+              <h2>{{ column.title }}</h2>
+              <span class="count">{{ column.cards.length }}</span>
+              <button
+                class="icon-btn"
+                type="button"
+                [attr.aria-label]="'Add application to ' + column.title"
+                (click)="openCreate(column.status)"
+              >
+                +
+              </button>
+            </header>
+
+            <div
+              class="cards"
+              cdkDropList
+              [cdkDropListData]="column.status"
+              (cdkDropListDropped)="drop($event)"
+            >
+              @for (card of column.cards; track card.id) {
+                <article
+                  class="card"
+                  cdkDrag
+                  [cdkDragData]="card"
+                  tabindex="0"
+                  role="button"
+                  [attr.aria-label]="'Edit ' + card.roleTitle + ' at ' + card.company"
+                  (click)="openEdit(card)"
+                  (keydown.enter)="openEdit(card)"
+                >
+                  <h3>{{ card.company }}</h3>
+                  <p class="role">{{ card.roleTitle }}</p>
+                  <p class="meta">
+                    @if (card.location; as location) {
+                      <span>{{ location }}</span>
+                    }
+                    @if (card.workMode; as workMode) {
+                      <span class="chip">{{ workModeLabels[workMode] }}</span>
+                    }
+                    @if (card.appliedAt; as appliedAt) {
+                      <span>Applied {{ appliedAt | date: 'MMM d' }}</span>
+                    } @else {
+                      <span>Added {{ card.createdAt | date: 'MMM d' }}</span>
+                    }
+                  </p>
+                </article>
+              } @empty {
+                <div class="column-empty">
+                  <p class="empty-title">No applications yet</p>
+                  <p>{{ column.emptyHint }}</p>
+                </div>
+              }
+            </div>
+          </article>
+        }
+      </section>
+    }
   </main>
+
+  @if (dialog(); as state) {
+    <app-application-dialog
+      [application]="state.application"
+      [initialStatus]="state.status"
+      (closed)="closeDialog()"
+    />
+  }
 </div>
