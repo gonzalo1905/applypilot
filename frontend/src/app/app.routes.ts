@@ -21,5 +21,11 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./board/board').then((m) => m.Board),
   },
+  {
+    path: 'profile',
+    title: 'Profile · ApplyPilot',
+    canActivate: [authGuard],
+    loadComponent: () => import('./profile/profile').then((m) => m.Profile),
+  },
   { path: '**', redirectTo: 'board' },
 ];

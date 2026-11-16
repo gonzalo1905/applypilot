@@ -1,0 +1,92 @@
+h1 {
+  font-size: 1.5rem;
+}
+
+.details {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.5rem 1.5rem;
+  margin: 0;
+
+  dt {
+    color: var(--color-text-muted);
+  }
+
+  dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+.cv-file {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.875rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+}
+
+.file-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 48px;
+  border-radius: 6px;
+  background: var(--color-danger-surface);
+  color: var(--color-danger);
+  font-size: 0.6875rem;
+  font-weight: 800;
+}
+
+.file-info {
+  min-width: 0;
+}
+
+.file-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.alert-warning {
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--status-interview);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.confirm-text {
+  flex: 1 1 100%;
+  color: var(--color-danger);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+label.btn.disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Keeps the file input usable by keyboard and screen readers while the label is the button. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+label.btn:focus-within {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}

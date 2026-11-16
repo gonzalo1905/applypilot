@@ -1,0 +1,84 @@
+<app-topbar />
+
+<main class="page">
+  <h1>Profile</h1>
+
+  @if (user(); as currentUser) {
+    <section class="panel" aria-labelledby="account-title">
+      <h2 id="account-title">Account</h2>
+      <dl class="details">
+        <dt>Name</dt>
+        <dd>{{ currentUser.fullName }}</dd>
+        <dt>Email</dt>
+        <dd>{{ currentUser.email }}</dd>
+        <dt>Member since</dt>
+        <dd>{{ currentUser.createdAt | date: 'mediumDate' }}</dd>
+      </dl>
+    </section>
+  }
+
+  <section class="panel" aria-labelledby="cv-title">
+    <div>
+      <h2 id="cv-title">Your CV</h2>
+      <p class="muted">
+        One PDF, up to 5 MB. ApplyPilot reads its text so the AI assistant can work with it.
+      </p>
+    </div>
+
+    @if (errorMessage(); as message) {
+      <p class="alert-error" role="alert">{{ message }}</p>
+    }
+
+    @if (loading()) {
+      <p class="muted" role="status">Loading…</p>
+    } @else {
+      @if (cv(); as current) {
+        <div class="cv-file">
+          <span class="file-icon" aria-hidden="true">PDF</span>
+          <div class="file-info">
+            <p class="file-name">{{ current.fileName }}</p>
+            <p class="muted">
+              {{ formatSize(current.sizeBytes) }} · uploaded {{ current.uploadedAt | date: 'medium' }}
+            </p>
+          </div>
+        </div>
+
+        @if (!current.textExtracted) {
+          <p class="alert-warning" role="status">
+            No text could be read from this PDF. It looks like a scan; upload a text-based PDF so the
+            AI assistant can use it.
+          </p>
+        }
+      } @else {
+        <p class="muted">You have not uploaded a CV yet.</p>
+      }
+
+      <div class="actions">
+        @if (confirmingDelete()) {
+          <p class="confirm-text" role="alert">Delete your CV? This cannot be undone.</p>
+          <button class="btn btn-ghost" type="button" (click)="cancelDelete()">Keep it</button>
+          <button class="btn btn-danger" type="button" (click)="confirmDelete()">Delete</button>
+        } @else {
+          <label class="btn btn-primary" [class.disabled]="busy()">
+            {{ busy() ? 'Working…' : cv() ? 'Replace CV' : 'Upload CV' }}
+            <input
+              class="visually-hidden"
+              type="file"
+              accept="application/pdf,.pdf"
+              [disabled]="busy()"
+              (change)="onFileSelected($event)"
+            />
+          </label>
+          @if (cv()) {
+            <button class="btn btn-ghost" type="button" [disabled]="busy()" (click)="download()">
+              Download
+            </button>
+            <button class="btn btn-danger-ghost" type="button" [disabled]="busy()" (click)="askToDelete()">
+              Delete
+            </button>
+          }
+        }
+      </div>
+    }
+  </section>
+</main>
