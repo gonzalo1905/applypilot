@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
-import { guestGuard } from './auth/auth.guard';
+import { authGuard, guestGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'login' },
+  { path: '', pathMatch: 'full', redirectTo: 'board' },
   {
     path: 'login',
     title: 'Sign in · ApplyPilot',
@@ -15,4 +15,11 @@ export const routes: Routes = [
     canActivate: [guestGuard],
     loadComponent: () => import('./auth/register/register').then((m) => m.Register),
   },
+  {
+    path: 'board',
+    title: 'Board · ApplyPilot',
+    canActivate: [authGuard],
+    loadComponent: () => import('./board/board').then((m) => m.Board),
+  },
+  { path: '**', redirectTo: 'board' },
 ];

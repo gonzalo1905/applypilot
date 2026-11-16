@@ -1,0 +1,37 @@
+<div class="board-page">
+  <header class="topbar">
+    <span class="brand"><span class="brand-mark" aria-hidden="true">AP</span> ApplyPilot</span>
+
+    <div class="account">
+      @if (user(); as currentUser) {
+        <span class="avatar" aria-hidden="true">{{ initials() }}</span>
+        <span class="user-name" data-testid="user-name">{{ currentUser.fullName }}</span>
+      }
+      <button class="btn btn-ghost" type="button" (click)="logout()">Log out</button>
+    </div>
+  </header>
+
+  <main class="board-main">
+    <div class="board-heading">
+      <h1>Your applications</h1>
+      <p>Track every application from first interest to final answer.</p>
+    </div>
+
+    <section class="board" aria-label="Applications board">
+      @for (column of columns; track column.id) {
+        <article class="column" [attr.data-status]="column.id" [attr.aria-label]="column.title">
+          <header class="column-header">
+            <span class="status-dot" aria-hidden="true"></span>
+            <h2>{{ column.title }}</h2>
+            <span class="count" aria-label="0 applications">0</span>
+          </header>
+
+          <div class="column-empty">
+            <p class="empty-title">No applications yet</p>
+            <p>{{ column.emptyHint }}</p>
+          </div>
+        </article>
+      }
+    </section>
+  </main>
+</div>
