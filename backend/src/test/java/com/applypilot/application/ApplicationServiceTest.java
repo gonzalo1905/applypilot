@@ -11,8 +11,10 @@ import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.applypilot.common.error.InvalidRequestException;
 import com.applypilot.application.dto.ApplicationResponse;
 import com.applypilot.application.dto.CreateApplicationRequest;
 import com.applypilot.application.dto.MoveApplicationRequest;
@@ -345,6 +347,52 @@ class ApplicationServiceTest {
 		ApplicationResponse response = applicationService.update(USER_ID, card.getId(), updateRequest("Acme"));
 
 		assertThat(response.appliedAt()).isNull();
+	}
+
+	@Test
+	void rejectsAnAppliedDateNoRealApplicationCouldHave() {
+		JobApplication card = myCard("Acme", SAVED, 0);
+		LocalDate tooOld = LocalDate.of(1969, 12, 31);
+		LocalDate tooFarAhead = TODAY.plusYears(1).plusDays(1);
+
+		assertThatThrownBy(() -> applicationService.create(USER_ID, createRequest(SAVED, tooOld)))
+			.isInstanceOf(InvalidRequestException.class);
+		assertThatThrownBy(() -> applicationService.create(USER_ID, createRequest(SAVED, tooFarAhead)))
+			.isInstanceOf(InvalidRequestException.class);
+		assertThatThrownBy(() -> applicationService.update(USER_ID, card.getId(),
+				new UpdateApplicationRequest("Acme", "Backend Developer", null, null, null, null, null, tooOld)))
+			.isInstanceOf(InvalidRequestException.class);
+
+		// A date slightly ahead is allowed: the user's "today" can be ahead of the server's.
+		assertThat(applicationService.create(USER_ID, createRequest(SAVED, TODAY.plusDays(1))).appliedAt())
+			.isEqualTo(TODAY.plusDays(1));
+	}
+
+	@Test
+	void removesTheNulCharacterFromText() {
+		ApplicationResponse response = applicationService.create(USER_ID, new CreateApplicationRequest("Ac\u0000me",
+				"Dev\u0000", null, "\u0000", null, null, "note\u0000s", null, null));
+
+		assertThat(response.company()).isEqualTo("Acme");
+		assertThat(response.roleTitle()).isEqualTo("Dev");
+		assertThat(response.location()).isNull();
+		assertThat(response.notes()).isEqualTo("notes");
+	}
+
+	@Test
+	void everyWriteLocksTheCallersBoardAndReadsDoNot() {
+		JobApplication card = myCard("Acme", SAVED, 0);
+
+		applicationService.list(USER_ID);
+		applicationService.get(USER_ID, card.getId());
+		verify(repository, never()).lockBoard(any());
+
+		applicationService.create(USER_ID, createRequest(SAVED, null));
+		applicationService.update(USER_ID, card.getId(), updateRequest("Acme Corp"));
+		applicationService.move(USER_ID, card.getId(), new MoveApplicationRequest(OFFER, 0));
+		applicationService.delete(USER_ID, card.getId());
+
+		verify(repository, times(4)).lockBoard(USER_ID);
 	}
 
 	@Test

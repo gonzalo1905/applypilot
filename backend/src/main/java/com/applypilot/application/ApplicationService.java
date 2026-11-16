@@ -5,6 +5,7 @@ import com.applypilot.application.dto.ApplicationResponse;
 import com.applypilot.application.dto.CreateApplicationRequest;
 import com.applypilot.application.dto.MoveApplicationRequest;
 import com.applypilot.application.dto.UpdateApplicationRequest;
+import com.applypilot.common.error.InvalidRequestException;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -18,12 +19,19 @@ import org.springframework.transaction.annotation.Transactional;
  * touches that user's cards.
  *
  * <p>Ordering: each card has a zero-based {@code position} inside its column. After any
- * change to a column (move, delete) the column is renumbered 0..n-1. Two simultaneous
- * requests could leave two cards with the same position; reads break that tie by creation
- * time and the next move renumbers the column, so the board heals itself.
+ * change to a column (move, delete) the column is renumbered 0..n-1.
+ *
+ * <p>Concurrency: every method that writes first calls {@link JobApplicationRepository#lockBoard},
+ * so two requests for the same user's board (two tabs, quick drags) run one after the other
+ * and each one works on fresh data. Reads do not take the lock.
  */
 @Service
 public class ApplicationService {
+
+	/** PostgreSQL cannot store this character in text columns; it is removed from all input. */
+	private static final String NUL = "\u0000";
+
+	private static final LocalDate EARLIEST_APPLIED_DATE = LocalDate.of(1970, 1, 1);
 
 	private final JobApplicationRepository repository;
 
@@ -49,6 +57,7 @@ public class ApplicationService {
 
 	@Transactional
 	public ApplicationResponse create(UUID userId, CreateApplicationRequest request) {
+		repository.lockBoard(userId);
 		ApplicationStatus status = request.status() != null ? request.status() : ApplicationStatus.SAVED;
 		// New cards go to the end of their column.
 		int position = repository.countByUserIdAndStatus(userId, status);
@@ -60,6 +69,7 @@ public class ApplicationService {
 
 	@Transactional
 	public ApplicationResponse update(UUID userId, UUID id, UpdateApplicationRequest request) {
+		repository.lockBoard(userId);
 		JobApplication application = findOwned(userId, id);
 		LocalDate previousAppliedAt = application.getAppliedAt();
 		applyDetails(application, request);
@@ -73,6 +83,7 @@ public class ApplicationService {
 
 	@Transactional
 	public ApplicationResponse move(UUID userId, UUID id, MoveApplicationRequest request) {
+		repository.lockBoard(userId);
 		JobApplication application = findOwned(userId, id);
 		ApplicationStatus sourceStatus = application.getStatus();
 		ApplicationStatus targetStatus = request.status();
@@ -96,6 +107,7 @@ public class ApplicationService {
 
 	@Transactional
 	public void delete(UUID userId, UUID id) {
+		repository.lockBoard(userId);
 		JobApplication application = findOwned(userId, id);
 		repository.delete(application);
 		renumber(columnWithout(userId, application.getStatus(), id));
@@ -127,23 +139,39 @@ public class ApplicationService {
 		}
 	}
 
-	private static void applyDetails(JobApplication application, ApplicationDetails details) {
-		application.setCompany(details.company().trim());
-		application.setRoleTitle(details.roleTitle().trim());
-		application.setJobUrl(trimToNull(details.jobUrl()));
-		application.setLocation(trimToNull(details.location()));
+	private void applyDetails(JobApplication application, ApplicationDetails details) {
+		application.setCompany(clean(details.company()));
+		application.setRoleTitle(clean(details.roleTitle()));
+		application.setJobUrl(cleanToNull(details.jobUrl()));
+		application.setLocation(cleanToNull(details.location()));
 		application.setWorkMode(details.workMode());
-		application.setSalaryNote(trimToNull(details.salaryNote()));
-		application.setNotes(trimToNull(details.notes()));
-		application.setAppliedAt(details.appliedAt());
+		application.setSalaryNote(cleanToNull(details.salaryNote()));
+		application.setNotes(cleanToNull(details.notes()));
+		application.setAppliedAt(validAppliedDate(details.appliedAt()));
 	}
 
-	private static String trimToNull(String value) {
+	/**
+	 * Rejects dates no real application could have. The upper bound allows a year ahead
+	 * rather than "today", because the user's "today" can be ahead of the server's.
+	 */
+	private LocalDate validAppliedDate(LocalDate appliedAt) {
+		if (appliedAt != null && (appliedAt.isBefore(EARLIEST_APPLIED_DATE)
+				|| appliedAt.isAfter(LocalDate.now(clock).plusYears(1)))) {
+			throw new InvalidRequestException("The applied date is out of range");
+		}
+		return appliedAt;
+	}
+
+	private static String clean(String value) {
+		return value.replace(NUL, "").trim();
+	}
+
+	private static String cleanToNull(String value) {
 		if (value == null) {
 			return null;
 		}
-		String trimmed = value.trim();
-		return trimmed.isEmpty() ? null : trimmed;
+		String cleaned = clean(value);
+		return cleaned.isEmpty() ? null : cleaned;
 	}
 
 }

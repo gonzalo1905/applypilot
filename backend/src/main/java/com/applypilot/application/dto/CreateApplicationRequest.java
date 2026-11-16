@@ -13,7 +13,7 @@ import java.time.LocalDate;
 public record CreateApplicationRequest(
 		@NotBlank @Size(max = 120) String company,
 		@NotBlank @Size(max = 160) String roleTitle,
-		@Size(max = 2048) @Pattern(regexp = "^https?://\\S+$", message = "must be an http or https URL") String jobUrl,
+		@Size(max = 2048) @Pattern(regexp = "^\\s*$|^https?://\\S+$", message = "must be an http or https URL") String jobUrl,
 		@Size(max = 120) String location,
 		WorkMode workMode,
 		@Size(max = 120) String salaryNote,

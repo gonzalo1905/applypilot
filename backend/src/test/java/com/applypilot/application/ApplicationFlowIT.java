@@ -1,8 +1,11 @@
 package com.applypilot.application;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -14,7 +17,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.applypilot.TestcontainersConfiguration;
 import com.jayway.jsonpath.JsonPath;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -62,21 +71,18 @@ class ApplicationFlowIT {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.roleTitle").value("Backend Developer"));
 
+		// A form sends "" for fields the user left empty: they are stored as "no value".
 		mockMvc
 			.perform(authorized(put("/api/applications/" + id), token).content("""
-					{"company": "Acme Corp", "roleTitle": "Senior Backend Developer", "jobUrl": "",
-					 "appliedAt": "2026-11-02"}
-					"""))
-			.andExpect(status().isBadRequest());
-
-		mockMvc
-			.perform(authorized(put("/api/applications/" + id), token).content("""
-					{"company": "Acme Corp", "roleTitle": "Senior Backend Developer", "appliedAt": "2026-11-02"}
+					{"company": "Acme Corp", "roleTitle": "Senior Backend Developer", "jobUrl": "", "location": "",
+					 "notes": "", "appliedAt": "2026-11-02"}
 					"""))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.company").value("Acme Corp"))
 			.andExpect(jsonPath("$.appliedAt").value("2026-11-02"))
+			.andExpect(jsonPath("$.jobUrl").doesNotExist())
 			.andExpect(jsonPath("$.location").doesNotExist())
+			.andExpect(jsonPath("$.notes").doesNotExist())
 			.andExpect(jsonPath("$.status").value("SAVED"));
 
 		mockMvc.perform(authorized(delete("/api/applications/" + id), token)).andExpect(status().isNoContent());
@@ -117,10 +123,12 @@ class ApplicationFlowIT {
 			.andExpect(jsonPath("$[?(@.status == 'INTERVIEW')].position", contains(0, 1)));
 
 		// A position past the end means "last"; reaching APPLIED stamps today's date.
+		LocalDate before = LocalDate.now();
 		mockMvc.perform(authorized(patch("/api/applications/" + b + "/move"), token).content(moveBody("APPLIED", 99)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.position").value(0))
-			.andExpect(jsonPath("$.appliedAt").value(LocalDate.now().toString()));
+			// Either date is right if the test happens to run across midnight.
+			.andExpect(jsonPath("$.appliedAt", anyOf(is(before.toString()), is(LocalDate.now().toString()))));
 
 		// Deleting a card closes the gap it leaves.
 		mockMvc.perform(authorized(delete("/api/applications/" + a), token)).andExpect(status().isNoContent());
@@ -184,6 +192,65 @@ class ApplicationFlowIT {
 		mockMvc.perform(authorized(get("/api/applications/not-a-uuid"), token))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.code").value("INVALID_PARAMETER"));
+
+		// A date PostgreSQL could not even store must be a 400, not a 500.
+		mockMvc
+			.perform(authorized(post("/api/applications"), token).content("""
+					{"company": "Acme", "roleTitle": "Dev", "appliedAt": "+5874898-01-01"}
+					"""))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+	}
+
+	@Test
+	void removesCharactersTheDatabaseCannotStore() throws Exception {
+		String token = registerUser();
+
+		// \\u0000 in the JSON is the NUL character, which PostgreSQL text columns reject.
+		mockMvc
+			.perform(authorized(post("/api/applications"), token).content("""
+					{"company": "Ac\\u0000me", "roleTitle": "Dev", "notes": "\\u0000"}
+					"""))
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath("$.company").value("Acme"))
+			.andExpect(jsonPath("$.notes").doesNotExist());
+	}
+
+	@Test
+	void simultaneousMovesNeverCorruptTheColumnOrFail() throws Exception {
+		String token = registerUser();
+		List<String> ids = new ArrayList<>();
+		for (int i = 0; i < 6; i++) {
+			ids.add(createApplication(token, "Card " + i, "SAVED"));
+		}
+
+		// Six threads keep sending cards to the top and to the bottom of the same column.
+		List<Callable<Integer>> moves = new ArrayList<>();
+		for (int round = 0; round < 4; round++) {
+			for (int i = 0; i < ids.size(); i++) {
+				String id = ids.get(i);
+				int position = (i + round) % 2 == 0 ? 0 : 99;
+				moves.add(() -> mockMvc
+					.perform(authorized(patch("/api/applications/" + id + "/move"), token)
+						.content(moveBody("SAVED", position)))
+					.andReturn()
+					.getResponse()
+					.getStatus());
+			}
+		}
+		ExecutorService pool = Executors.newFixedThreadPool(6);
+		try {
+			for (Future<Integer> result : pool.invokeAll(moves)) {
+				assertThat(result.get()).isEqualTo(200);
+			}
+		}
+		finally {
+			pool.shutdownNow();
+		}
+
+		mockMvc.perform(authorized(get("/api/applications"), token))
+			.andExpect(jsonPath("$", hasSize(6)))
+			.andExpect(jsonPath("$[*].position", contains(0, 1, 2, 3, 4, 5)));
 	}
 
 	@Test
