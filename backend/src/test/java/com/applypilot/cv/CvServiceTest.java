@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -24,9 +25,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.transaction.support.SimpleTransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.unit.DataSize;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,13 +57,14 @@ class CvServiceTest {
 	@BeforeEach
 	void setUp() {
 		CvProperties properties = new CvProperties(DataSize.ofBytes(64), "unused");
-		service = new CvService(repository, storage, textExtractor, properties, Clock.fixed(NOW, ZoneOffset.UTC));
+		service = new CvService(repository, storage, textExtractor, properties, Clock.fixed(NOW, ZoneOffset.UTC),
+				directTransactions());
 	}
 
 	@Test
 	void firstUploadStoresTheFileAndSavesMetadataWithTheExtractedText() {
 		when(textExtractor.extractText(PDF)).thenReturn("Java developer");
-		when(repository.findByUserId(USER_ID)).thenReturn(Optional.empty());
+		when(repository.findForUpdateByUserId(USER_ID)).thenReturn(Optional.empty());
 		when(repository.saveAndFlush(any(Cv.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
 		CvResponse response = service.upload(USER_ID, "C:\\Users\\ada\\My CV.pdf", "application/pdf", PDF);
@@ -85,14 +91,18 @@ class CvServiceTest {
 	void replacingACvDeletesThePreviousFileAfterTheNewOneIsSaved() {
 		Cv existing = existingCv("cvs/old.pdf");
 		when(textExtractor.extractText(PDF)).thenReturn("");
-		when(repository.findByUserId(USER_ID)).thenReturn(Optional.of(existing));
+		when(repository.findForUpdateByUserId(USER_ID)).thenReturn(Optional.of(existing));
 		when(repository.saveAndFlush(existing)).thenReturn(existing);
 
 		CvResponse response = service.upload(USER_ID, "new.pdf", "application/pdf", PDF);
 
 		assertThat(existing.getStorageKey()).isNotEqualTo("cvs/old.pdf");
 		assertThat(existing.getFileName()).isEqualTo("new.pdf");
-		verify(storage).delete("cvs/old.pdf");
+		// Order matters: the old file may only go once the record points at the new one.
+		InOrder order = inOrder(storage, repository);
+		order.verify(storage).store(anyString(), eq(PDF));
+		order.verify(repository).saveAndFlush(existing);
+		order.verify(storage).delete("cvs/old.pdf");
 		// A scanned PDF has no text: the upload still succeeds and says so.
 		assertThat(response.textExtracted()).isFalse();
 	}
@@ -101,16 +111,44 @@ class CvServiceTest {
 	void aFailedSaveRemovesTheNewFileAndKeepsThePreviousOne() {
 		Cv existing = existingCv("cvs/old.pdf");
 		when(textExtractor.extractText(PDF)).thenReturn("text");
-		when(repository.findByUserId(USER_ID)).thenReturn(Optional.of(existing));
-		when(repository.saveAndFlush(existing)).thenThrow(new DataIntegrityViolationException("boom"));
+		when(repository.findForUpdateByUserId(USER_ID)).thenReturn(Optional.of(existing));
+		when(repository.saveAndFlush(existing)).thenThrow(new IllegalStateException("database is down"));
 
 		assertThatThrownBy(() -> service.upload(USER_ID, "new.pdf", "application/pdf", PDF))
-			.isInstanceOf(DataIntegrityViolationException.class);
+			.isInstanceOf(IllegalStateException.class);
 
 		ArgumentCaptor<String> newKey = ArgumentCaptor.forClass(String.class);
 		verify(storage).store(newKey.capture(), eq(PDF));
 		verify(storage).delete(newKey.getValue());
 		verify(storage, never()).delete("cvs/old.pdf");
+	}
+
+	@Test
+	void aFailedFileWriteLeavesNoHalfWrittenFileAndNeverTouchesTheDatabase() {
+		when(textExtractor.extractText(PDF)).thenReturn("text");
+		doThrow(new IllegalStateException("disk full")).when(storage).store(anyString(), eq(PDF));
+
+		assertThatThrownBy(() -> service.upload(USER_ID, "new.pdf", "application/pdf", PDF))
+			.isInstanceOf(IllegalStateException.class);
+
+		ArgumentCaptor<String> newKey = ArgumentCaptor.forClass(String.class);
+		verify(storage).store(newKey.capture(), eq(PDF));
+		verify(storage).delete(newKey.getValue());
+		verifyNoInteractions(repository);
+	}
+
+	@Test
+	void twoFirstUploadsAtOnceReportAConflictInsteadOfAServerError() {
+		when(textExtractor.extractText(PDF)).thenReturn("text");
+		when(repository.findForUpdateByUserId(USER_ID)).thenReturn(Optional.empty());
+		when(repository.saveAndFlush(any(Cv.class))).thenThrow(new DataIntegrityViolationException("uk_cvs_user"));
+
+		assertThatThrownBy(() -> service.upload(USER_ID, "cv.pdf", "application/pdf", PDF))
+			.isInstanceOf(CvUploadConflictException.class);
+
+		ArgumentCaptor<String> newKey = ArgumentCaptor.forClass(String.class);
+		verify(storage).store(newKey.capture(), eq(PDF));
+		verify(storage).delete(newKey.getValue());
 	}
 
 	@Test
@@ -183,7 +221,7 @@ class CvServiceTest {
 	@Test
 	void deleteRemovesTheRecordAndTheFile() {
 		Cv existing = existingCv("cvs/old.pdf");
-		when(repository.findByUserId(USER_ID)).thenReturn(Optional.of(existing));
+		when(repository.findForUpdateByUserId(USER_ID)).thenReturn(Optional.of(existing));
 
 		service.delete(USER_ID);
 
@@ -194,7 +232,7 @@ class CvServiceTest {
 	@Test
 	void deleteSucceedsEvenIfTheFileCannotBeRemoved() {
 		Cv existing = existingCv("cvs/old.pdf");
-		when(repository.findByUserId(USER_ID)).thenReturn(Optional.of(existing));
+		when(repository.findForUpdateByUserId(USER_ID)).thenReturn(Optional.of(existing));
 		doThrow(new IllegalStateException("disk error")).when(storage).delete("cvs/old.pdf");
 
 		service.delete(USER_ID);
@@ -209,6 +247,16 @@ class CvServiceTest {
 		assertThat(CvService.sanitizeFileName("  ")).isEqualTo("cv.pdf");
 		assertThat(CvService.sanitizeFileName(null)).isEqualTo("cv.pdf");
 		assertThat(CvService.sanitizeFileName("a".repeat(300) + ".pdf")).hasSize(255).endsWith(".pdf");
+	}
+
+	/** Runs the callback directly: unit tests have no database, so there is nothing to commit. */
+	private static TransactionTemplate directTransactions() {
+		return new TransactionTemplate() {
+			@Override
+			public <T> T execute(TransactionCallback<T> action) {
+				return action.doInTransaction(new SimpleTransactionStatus());
+			}
+		};
 	}
 
 	private static Cv existingCv(String storageKey) {

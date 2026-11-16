@@ -13,8 +13,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.applypilot.TestcontainersConfiguration;
 import com.jayway.jsonpath.JsonPath;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,10 +37,12 @@ import org.springframework.test.web.servlet.RequestBuilder;
  * CV upload API against a real PostgreSQL (Testcontainers) and a throwaway storage folder
  * under {@code target/}. Requires Docker to be running.
  */
-@SpringBootTest(properties = "app.cv.storage-dir=target/test-storage")
+@SpringBootTest(properties = "app.cv.storage-dir=" + CvFlowIT.STORAGE_DIR)
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
 class CvFlowIT {
+
+	static final String STORAGE_DIR = "target/test-storage/cv-flow";
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -47,6 +56,8 @@ class CvFlowIT {
 		byte[] first = TestPdfs.withText("Backend developer, Java and Spring Boot");
 		byte[] second = TestPdfs.withText("Full-stack developer, Java and Angular");
 
+		Set<String> filesBefore = storedFiles();
+
 		mockMvc.perform(get("/api/users/me/cv").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
 			.andExpect(status().isNotFound())
 			.andExpect(jsonPath("$.code").value("CV_NOT_FOUND"));
@@ -58,6 +69,8 @@ class CvFlowIT {
 			.andExpect(jsonPath("$.textExtracted").value(true))
 			.andExpect(jsonPath("$.extractedText").doesNotExist())
 			.andExpect(jsonPath("$.storageKey").doesNotExist());
+		Set<String> afterFirstUpload = newFilesSince(filesBefore);
+		assertThat(afterFirstUpload).hasSize(1);
 
 		String cvId = JsonPath.read(mockMvc.perform(upload(token, pdfPart("cv-v2.pdf", second)))
 			.andExpect(status().isOk())
@@ -65,6 +78,9 @@ class CvFlowIT {
 			.andReturn()
 			.getResponse()
 			.getContentAsString(), "$.id");
+
+		// Replacing leaves exactly one file on disk for this user: the new one.
+		assertThat(newFilesSince(filesBefore)).hasSize(1).doesNotContainAnyElementsOf(afterFirstUpload);
 
 		// The text the AI features will read is stored with the record.
 		assertThat(cvRepository.findById(UUID.fromString(cvId)))
@@ -83,13 +99,15 @@ class CvFlowIT {
 			.andExpect(status().isNoContent());
 		mockMvc.perform(get("/api/users/me/cv/file").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
 			.andExpect(status().isNotFound());
+		assertThat(newFilesSince(filesBefore)).isEmpty();
 	}
 
 	@Test
 	void eachUserOnlyReachesTheirOwnCv() throws Exception {
 		String owner = registerUser();
 		String other = registerUser();
-		mockMvc.perform(upload(owner, pdfPart("owner.pdf", TestPdfs.withText("Owner CV")))).andExpect(status().isOk());
+		byte[] ownerPdf = TestPdfs.withText("Owner CV");
+		mockMvc.perform(upload(owner, pdfPart("owner.pdf", ownerPdf))).andExpect(status().isOk());
 
 		mockMvc.perform(get("/api/users/me/cv").header(HttpHeaders.AUTHORIZATION, "Bearer " + other))
 			.andExpect(status().isNotFound());
@@ -101,12 +119,17 @@ class CvFlowIT {
 		mockMvc.perform(get("/api/users/me/cv").header(HttpHeaders.AUTHORIZATION, "Bearer " + owner))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.fileName").value("owner.pdf"));
+		// The other user's delete attempt did not remove the owner's file.
+		mockMvc.perform(get("/api/users/me/cv/file").header(HttpHeaders.AUTHORIZATION, "Bearer " + owner))
+			.andExpect(status().isOk())
+			.andExpect(content().bytes(ownerPdf));
 	}
 
 	@Test
 	void rejectsFilesThatAreNotValidPdfs() throws Exception {
 		String token = registerUser();
 		byte[] text = "just a text file".getBytes(StandardCharsets.UTF_8);
+		Set<String> filesBefore = storedFiles();
 
 		// Wrong declared type.
 		mockMvc.perform(upload(token, new MockMultipartFile("file", "notes.txt", "text/plain", text)))
@@ -135,9 +158,10 @@ class CvFlowIT {
 			.andExpect(status().is(413))
 			.andExpect(jsonPath("$.code").value("FILE_TOO_LARGE"));
 
-		// Nothing was stored by any of the rejected uploads.
+		// Nothing was stored by any of the rejected uploads: no record and no file.
 		mockMvc.perform(get("/api/users/me/cv").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
 			.andExpect(status().isNotFound());
+		assertThat(newFilesSince(filesBefore)).isEmpty();
 	}
 
 	@Test
@@ -145,6 +169,23 @@ class CvFlowIT {
 		mockMvc.perform(multipart("/api/users/me/cv").file(pdfPart("cv.pdf", TestPdfs.withText("x"))))
 			.andExpect(status().isUnauthorized());
 		mockMvc.perform(get("/api/users/me/cv/file")).andExpect(status().isUnauthorized());
+	}
+
+	/** Names of the files currently in the storage folder. */
+	private static Set<String> storedFiles() throws IOException {
+		Path folder = Path.of(STORAGE_DIR, "cvs");
+		if (!Files.isDirectory(folder)) {
+			return Set.of();
+		}
+		try (Stream<Path> files = Files.list(folder)) {
+			return files.map(file -> file.getFileName().toString()).collect(Collectors.toSet());
+		}
+	}
+
+	private static Set<String> newFilesSince(Set<String> before) throws IOException {
+		Set<String> now = new HashSet<>(storedFiles());
+		now.removeAll(before);
+		return now;
 	}
 
 	private static RequestBuilder upload(String token, MockMultipartFile file) {

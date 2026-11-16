@@ -9,11 +9,19 @@ import java.util.Locale;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * One CV per user: upload (or replace), read metadata, download and delete.
+ *
+ * <p>A file on disk and a row in the database cannot be changed in one atomic step, so the
+ * order of operations matters. The rule here: never delete a file that a committed row still
+ * points to. Slow work (parsing the PDF, disk I/O) happens outside the database transaction,
+ * which stays short and only covers the row change. That is why this class uses a
+ * {@link TransactionTemplate} instead of {@code @Transactional} on the whole method.
  */
 @Service
 public class CvService {
@@ -37,41 +45,49 @@ public class CvService {
 
 	private final Clock clock;
 
+	private final TransactionTemplate transaction;
+
 	public CvService(CvRepository repository, CvStorage storage, PdfTextExtractor textExtractor,
-			CvProperties properties, Clock clock) {
+			CvProperties properties, Clock clock, TransactionTemplate transaction) {
 		this.repository = repository;
 		this.storage = storage;
 		this.textExtractor = textExtractor;
 		this.properties = properties;
 		this.clock = clock;
+		this.transaction = transaction;
 	}
 
-	@Transactional
 	public CvResponse upload(UUID userId, String originalFileName, String contentType, byte[] content) {
 		validate(contentType, content);
 		String text = textExtractor.extractText(content);
+		String fileName = sanitizeFileName(originalFileName);
 
-		// Store under a fresh key, then repoint the record, then remove the old file. If
-		// anything fails before the record is saved, the user's previous CV is still intact.
+		// 1. Store the new file under a fresh key. 2. Point the row at it (short transaction).
+		// 3. Only after that commit, remove the old file. A failure at any step leaves the
+		// user's previous CV fully intact.
 		String newKey = "cvs/" + UUID.randomUUID() + ".pdf";
-		storage.store(newKey, content);
-		String oldKey;
-		Cv cv;
+		SavedCv saved;
 		try {
-			cv = repository.findByUserId(userId).orElseGet(() -> new Cv(userId));
-			oldKey = cv.getStorageKey();
-			cv.replaceFile(sanitizeFileName(originalFileName), PDF_CONTENT_TYPE, content.length, newKey, text,
-					clock.instant());
-			cv = repository.saveAndFlush(cv);
+			storage.store(newKey, content);
+			saved = transaction.execute(status -> {
+				Cv cv = repository.findForUpdateByUserId(userId).orElseGet(() -> new Cv(userId));
+				String previousKey = cv.getStorageKey();
+				cv.replaceFile(fileName, PDF_CONTENT_TYPE, content.length, newKey, text, clock.instant());
+				return new SavedCv(CvResponse.from(repository.saveAndFlush(cv)), previousKey);
+			});
+		}
+		catch (DataIntegrityViolationException ex) {
+			deleteQuietly(newKey);
+			throw new CvUploadConflictException();
 		}
 		catch (RuntimeException ex) {
 			deleteQuietly(newKey);
 			throw ex;
 		}
-		if (oldKey != null) {
-			deleteQuietly(oldKey);
+		if (saved.previousKey() != null) {
+			deleteQuietly(saved.previousKey());
 		}
-		return CvResponse.from(cv);
+		return saved.response();
 	}
 
 	@Transactional(readOnly = true)
@@ -79,7 +95,6 @@ public class CvService {
 		return CvResponse.from(findOwned(userId));
 	}
 
-	@Transactional(readOnly = true)
 	public CvFile download(UUID userId) {
 		Cv cv = findOwned(userId);
 		byte[] content = storage.load(cv.getStorageKey()).orElseThrow(() -> {
@@ -89,12 +104,15 @@ public class CvService {
 		return new CvFile(cv.getFileName(), cv.getContentType(), content);
 	}
 
-	@Transactional
 	public void delete(UUID userId) {
-		Cv cv = findOwned(userId);
-		repository.delete(cv);
-		repository.flush();
-		deleteQuietly(cv.getStorageKey());
+		String key = transaction.execute(status -> {
+			Cv cv = repository.findForUpdateByUserId(userId).orElseThrow(CvNotFoundException::new);
+			repository.delete(cv);
+			repository.flush();
+			return cv.getStorageKey();
+		});
+		// The row is gone for good (committed), so the file can go too.
+		deleteQuietly(key);
 	}
 
 	private Cv findOwned(UUID userId) {
@@ -145,6 +163,9 @@ public class CvService {
 
 	/** A downloaded CV: its display name, type and bytes. */
 	public record CvFile(String fileName, String contentType, byte[] content) {
+	}
+
+	private record SavedCv(CvResponse response, String previousKey) {
 	}
 
 }
