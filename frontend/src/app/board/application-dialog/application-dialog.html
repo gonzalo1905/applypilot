@@ -23,6 +23,7 @@
           type="text"
           formControlName="company"
           autocomplete="organization"
+          autofocus
           [class.invalid]="form.controls.company.touched && form.controls.company.invalid"
         />
         @if (form.controls.company.touched && form.controls.company.invalid) {
