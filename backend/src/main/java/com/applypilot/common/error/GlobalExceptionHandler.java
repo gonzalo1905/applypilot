@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 
 /**
  * Translates every exception into the same {@link ApiError} JSON shape.
@@ -53,6 +54,13 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(MaxUploadSizeExceededException.class)
 	ResponseEntity<ApiError> handleUploadTooLarge(MaxUploadSizeExceededException ex, HttpServletRequest request) {
 		return build(HttpStatus.valueOf(413), "FILE_TOO_LARGE", "The uploaded file is too large", request, List.of());
+	}
+
+	/** A multipart body that cannot be parsed (no boundary, upload cut short) is a client error. */
+	@ExceptionHandler(MultipartException.class)
+	ResponseEntity<ApiError> handleMalformedUpload(MultipartException ex, HttpServletRequest request) {
+		return build(HttpStatus.BAD_REQUEST, "MALFORMED_REQUEST", "The upload could not be read", request,
+				List.of());
 	}
 
 	@ExceptionHandler(ApiException.class)
