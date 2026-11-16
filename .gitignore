@@ -20,6 +20,7 @@ Thumbs.db
 
 # Claude Code: personal, machine-specific settings (shared project config stays tracked)
 .claude/settings.local.json
+CLAUDE.local.md
 
 # Logs
 *.log
