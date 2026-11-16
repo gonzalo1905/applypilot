@@ -181,6 +181,11 @@ a {
   font-size: 0.8125rem;
 }
 
+.field-hint {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+}
+
 .alert-error {
   padding: 0.65rem 0.8rem;
   border-radius: var(--radius-sm);
