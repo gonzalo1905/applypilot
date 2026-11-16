@@ -1,6 +1,21 @@
 spring:
   application:
     name: applypilot-backend
+  config:
+    # Optionally load the git-ignored .env from the repo root (or the working directory),
+    # so the same file configures Docker Compose and the backend.
+    import:
+      - optional:file:../.env[.properties]
+      - optional:file:.env[.properties]
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/applypilot}
+    username: ${DB_USERNAME:applypilot}
+    password: ${DB_PASSWORD:applypilot}
+  jpa:
+    open-in-view: false
+    hibernate:
+      # Flyway owns the schema; Hibernate only checks that entities match it.
+      ddl-auto: validate
 
 server:
   port: ${SERVER_PORT:8080}
