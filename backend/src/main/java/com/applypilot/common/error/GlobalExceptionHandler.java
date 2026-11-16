@@ -15,6 +15,8 @@ import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 /**
  * Translates every exception into the same {@link ApiError} JSON shape.
@@ -38,6 +40,19 @@ public class GlobalExceptionHandler {
 	ResponseEntity<ApiError> handleUnreadableBody(HttpMessageNotReadableException ex, HttpServletRequest request) {
 		return build(HttpStatus.BAD_REQUEST, "MALFORMED_REQUEST", "Request body is missing or malformed", request,
 				List.of());
+	}
+
+	/** A path or query value of the wrong type, for example an id that is not a UUID. */
+	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+	ResponseEntity<ApiError> handleTypeMismatch(MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+		return build(HttpStatus.BAD_REQUEST, "INVALID_PARAMETER", "Parameter '" + ex.getName() + "' is not valid",
+				request, List.of());
+	}
+
+	/** The servlet container rejected an upload before it reached a controller. */
+	@ExceptionHandler(MaxUploadSizeExceededException.class)
+	ResponseEntity<ApiError> handleUploadTooLarge(MaxUploadSizeExceededException ex, HttpServletRequest request) {
+		return build(HttpStatus.valueOf(413), "FILE_TOO_LARGE", "The uploaded file is too large", request, List.of());
 	}
 
 	@ExceptionHandler(ApiException.class)
