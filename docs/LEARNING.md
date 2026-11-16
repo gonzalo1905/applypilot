@@ -144,3 +144,114 @@ Claude Code concept was practiced. Each stage ends with three interview-style qu
    token were stored in a cookie instead of `localStorage`?
 3. The register endpoint checks `existsByEmail` before saving. Why is that check not enough on
    its own, and what guarantees uniqueness when two requests arrive at the same time?
+
+## Stage 2 - Board (applications, drag and drop, CV upload)
+
+### What was built
+
+- **Backend, `application` feature:** the `JobApplication` entity (company, role, URL,
+  location, work mode, salary note, notes, status, position, applied date) with Flyway
+  migration `V2`, and `/api/applications` with list, create, get, update, delete and
+  `PATCH /{id}/move`, which changes column and position.
+- **Backend, `cv` feature:** one PDF per user under `/api/users/me/cv` (upload or replace,
+  metadata, download, delete). The file goes to local disk behind the `CvStorage` interface;
+  its text is extracted with Apache PDFBox and stored in the database (migration `V3`) for the
+  AI features of later stages.
+- **Frontend:** the board loads real cards; cards can be dragged inside and between columns
+  (Angular CDK) with an optimistic update; a native `<dialog>` creates, edits and deletes
+  cards; a profile page uploads, replaces, downloads and deletes the CV.
+- **Tests:** backend 81 unit and 23 integration tests, frontend 77 tests, including the login
+  and register forms that Stage 1 left untested.
+- **Claude Code:** the subagents `.claude/agents/code-reviewer.md` and `test-writer.md`, and an
+  improved `add-rest-endpoint` skill.
+
+### Why these decisions
+
+- **Ownership is part of every query.** The repository only offers finders that take the
+  owner's id (`findByIdAndUserId`), and the id always comes from the token. Asking for another
+  user's card returns 404, the same answer as for an id that does not exist; a 403 would
+  confirm that the id is real.
+- **Positions are integers, renumbered 0..n-1.** Moving a card rewrites the affected column or
+  columns in one transaction. It costs a few updates per move, which is nothing at the size of
+  a personal board, and the data is always easy to read. The alternative (fractional or
+  lexicographic ranks) updates one row per move but needs periodic rebalancing.
+- **Board writes are serialized per user.** Every write first locks the owner's row
+  (`select ... for update`), so two overlapping requests for the same board run one after the
+  other. Without it, two moves can update the same rows in opposite order and PostgreSQL
+  aborts one of them with `deadlock detected`, or a move can overwrite a concurrent edit with
+  stale data. Different users never wait for each other.
+- **`PUT` edits details, `PATCH /move` changes column and position.** Keeping status out of
+  the update request means there is exactly one code path that reorders cards.
+- **The applied date is filled in when a card reaches Applied** and never silently lost: an
+  edit of an Applied card that sends no date keeps the one it had.
+- **Storage behind an interface.** `CvService` only knows `CvStorage`. Local disk is right for
+  development; hosts with ephemeral disks need a cloud implementation, and only one class
+  changes.
+- **Never trust an upload.** The declared content type and file name are chosen by the client.
+  The service checks the size and the file's first bytes (`%PDF-`), generates the storage key
+  itself, and keeps the original name only as display text.
+- **Files and rows cannot change atomically, so order matters.** Store the new file, commit
+  the row, and only then delete the old file. Parsing and disk I/O happen outside the database
+  transaction, which stays short (`TransactionTemplate`).
+- **Optimistic UI with a real source of truth.** The pure function `moveCard` applies the same
+  ordering rule as the backend, so a dropped card moves at once. If the server rejects the
+  move, the board rolls back, explains why and re-reads itself from the API.
+- **Native `<dialog>`.** The browser provides the backdrop, the focus trap and Esc-to-close;
+  no dialog library was added.
+- **Two kinds of integration test.** MockMvc tests are fast but never touch the servlet
+  container, so `CvUploadHttpIT` sends real HTTP requests to prove that multipart parsing and
+  the container's upload limit behave as intended.
+
+### Known limitations (deliberately left for later)
+
+- **Hostile PDFs.** Page, character and concurrency limits bound the cost of parsing, but a
+  crafted PDF can still use a lot of memory. A hardened deployment parses in a separate,
+  memory-limited worker.
+- **"Today" is the server's date.** A card moved to Applied near midnight by a user in another
+  time zone can be stamped with the neighboring day; the date can be edited.
+- **Drag and drop needs a pointer.** Keyboard users change a card's column from the dialog.
+
+### Claude Code concepts practiced: subagents
+
+- **What a subagent is.** A separate Claude instance that the main session starts for one
+  task. It gets its own instructions (a Markdown file in `.claude/agents/`), its own tool
+  permissions and, above all, its own context window: it starts empty, reads what it needs,
+  and hands back only its final report.
+- **Why the separate context matters.** Reviewing this stage's backend meant reading about
+  forty files. Done in the main session, that reading would have filled the context that the
+  rest of the work needed. The reviewer read them in its own window and returned one page of
+  findings. A fresh context also means a fresh pair of eyes: the reviewer has not seen the
+  reasoning that produced the code, so it does not inherit its blind spots.
+- **Used for real in this stage.**
+  - `test-writer` drafted 40 unit tests for `ApplicationService`. While doing so it noticed
+    that editing a card in Applied could erase its applied date, and reported it instead of
+    writing a test around it. The bug was fixed and three tests now cover it.
+  - `code-reviewer` (read-only) reviewed the backend diff and reported twelve findings. The
+    most important: with no locking, two overlapping moves could deadlock or overwrite a
+    concurrent edit. The fix is the per-user lock above. To confirm the finding was real, the
+    lock was removed for one run and the new concurrency test failed with PostgreSQL's
+    `ERROR: deadlock detected`.
+  - A subagent's report is input to judge, not an order: each finding was checked against the
+    code, most were fixed, and two were accepted and documented as known limitations.
+- **Subagent, skill or `CLAUDE.md`?**
+  - `CLAUDE.md`: facts and rules that apply to every task, always loaded. Keep it short.
+  - Skill: a recipe for one kind of task, loaded into the current conversation only when
+    that task comes up. It guides the main session's own work.
+  - Subagent: a helper that does a whole piece of work in a separate context and returns a
+    result. Use it when the work is large, self-contained, or benefits from independence
+    (reviews, broad searches, drafting tests).
+- **How to invoke them.** Ask in plain words ("use the code-reviewer subagent to review my
+  uncommitted changes"); Claude also picks one by itself when a task matches its description.
+  The `/agents` command lists, creates and edits them.
+  Skills and subagents are discovered when a session starts, so files created during a
+  session become available in the next one.
+
+### Interview questions
+
+1. A user sends `GET /api/applications/{id}` with the id of another user's card. What does
+   the API answer, where in the code is that decided, and why is the answer not 403?
+2. Two browser tabs move cards on the same board at the same moment. What can go wrong
+   without any locking, how does this project prevent it, and what would be the trade-off of
+   using optimistic locking (`@Version`) instead?
+3. Replacing a CV involves a file on disk and a row in the database. In which order are the
+   steps done, and what does the user end up with if the process fails at each step?

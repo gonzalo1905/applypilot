@@ -25,6 +25,7 @@ docker-compose.yml   Local infrastructure (PostgreSQL)
 .env.example         Template for local environment variables
 CLAUDE.md            Project conventions for Claude Code
 .claude/skills/      Project skills (reusable recipes for Claude Code)
+.claude/agents/      Project subagents (code reviewer, test writer)
 ```
 
 ## Prerequisites
@@ -72,14 +73,29 @@ CLAUDE.md            Project conventions for Claude Code
 ## What works today
 
 - Register, log in and log out; the session survives a page reload.
-- Protected `/board` page with the five Kanban columns (empty for now).
+- Kanban board: add, edit and delete applications, and drag cards inside and between the five
+  columns. Each user only ever sees their own cards.
+- Profile page: upload, replace, download and delete a CV (PDF, up to 5 MB). Its text is
+  extracted and stored for the AI features of later stages.
 - API documentation at http://localhost:8080/swagger-ui.html once the backend is running.
 
-| Method | Path                 | Auth   | Description                      |
-|--------|----------------------|--------|----------------------------------|
-| POST   | `/api/auth/register` | public | Create an account, returns a JWT |
-| POST   | `/api/auth/login`    | public | Log in, returns a JWT            |
-| GET    | `/api/users/me`      | bearer | Profile of the logged-in user    |
+| Method | Path                          | Auth   | Description                             |
+|--------|-------------------------------|--------|-----------------------------------------|
+| POST   | `/api/auth/register`          | public | Create an account, returns a JWT        |
+| POST   | `/api/auth/login`             | public | Log in, returns a JWT                   |
+| GET    | `/api/users/me`               | bearer | Profile of the logged-in user           |
+| GET    | `/api/applications`           | bearer | The user's applications                 |
+| POST   | `/api/applications`           | bearer | Create an application                   |
+| GET    | `/api/applications/{id}`      | bearer | One application                         |
+| PUT    | `/api/applications/{id}`      | bearer | Edit its details                        |
+| PATCH  | `/api/applications/{id}/move` | bearer | Change its column and position          |
+| DELETE | `/api/applications/{id}`      | bearer | Delete it                               |
+| POST   | `/api/users/me/cv`            | bearer | Upload or replace the CV (multipart)    |
+| GET    | `/api/users/me/cv`            | bearer | CV metadata                             |
+| GET    | `/api/users/me/cv/file`       | bearer | Download the PDF                        |
+| DELETE | `/api/users/me/cv`            | bearer | Delete the CV                           |
+
+Uploaded CVs are stored in `backend/storage/` (git-ignored; change it with `STORAGE_DIR`).
 
 ## Tests
 

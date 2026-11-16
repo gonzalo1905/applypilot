@@ -16,6 +16,8 @@ stages; see `docs/LEARNING.md` for what each stage added and why.
 - `frontend/` Angular SPA, source in `frontend/src/app`
 - `docs/` documentation; `docs/LEARNING.md` is the learning log (add a section per stage)
 - `.claude/skills/` project skills; use `add-rest-endpoint` for any new backend endpoint
+- `.claude/agents/` subagents: `code-reviewer` (read-only diff review; run it before committing a
+  feature) and `test-writer` (drafts missing tests; verify them before committing)
 
 ## Commands
 
@@ -32,7 +34,9 @@ stages; see `docs/LEARNING.md` for what each stage added and why.
 
 ## Backend conventions
 
-- Package by feature (`auth`, `user`, `common`, ...), not by layer.
+- Package by feature (`auth`, `user`, `application`, `cv`, `common`), not by layer.
+- User-owned data: the owner id comes from the JWT and is part of every query; another user's
+  resource answers 404. Lock before multi-row writes (`JobApplicationRepository.lockBoard`).
 - Controllers are thin: validate input, call a service, return a DTO. Never expose JPA entities.
 - DTOs are Java records with Bean Validation annotations; suffix `Request` / `Response`.
 - Constructor injection only (no field `@Autowired`); dependencies are `private final`.
@@ -43,7 +47,7 @@ stages; see `docs/LEARNING.md` for what each stage added and why.
 ## Frontend conventions
 
 - Standalone components, `inject()` for dependencies, signals for state, new control flow (`@if`, `@for`).
-- Feature folders under `src/app` (`auth`, `board`, `core`); functional guards and interceptors.
+- Feature folders under `src/app` (`auth`, `board`, `profile`, `core`); functional guards and interceptors.
 - Styling with SCSS and the CSS custom properties defined in `src/styles.scss`; support light and dark.
 
 ## Rules
@@ -54,5 +58,5 @@ stages; see `docs/LEARNING.md` for what each stage added and why.
   or "Generated with" lines in commits, code or docs.
 - Do not push; the owner reviews and pushes.
 - Work only inside this repository. Do not read or modify other folders on this machine.
-- Code, commits and docs in English.
-- Run the relevant tests before committing and report real results, including failures.
+- Code, commits and docs in English. Run the relevant tests before committing and report real
+  results, including failures.
