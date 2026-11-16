@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.applypilot.TestcontainersConfiguration;
+import com.applypilot.user.UserRepository;
 import com.jayway.jsonpath.JsonPath;
 import java.util.UUID;
 import org.hamcrest.Matchers;
@@ -35,6 +36,9 @@ class AuthFlowIT {
 
 	@Autowired
 	private MockMvc mockMvc;
+
+	@Autowired
+	private UserRepository userRepository;
 
 	@Test
 	void registerThenLoginThenFetchOwnProfile() throws Exception {
@@ -80,6 +84,24 @@ class AuthFlowIT {
 		mockMvc.perform(get("/api/users/me").header(HttpHeaders.AUTHORIZATION, "Bearer not-a-real-token"))
 			.andExpect(status().isUnauthorized())
 			.andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
+	}
+
+	@Test
+	void aTokenOfADeletedAccountIsNoLongerAccepted() throws Exception {
+		String email = uniqueEmail();
+		String response = mockMvc
+			.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
+				.content(registerBody(email, PASSWORD, "Ada Lovelace")))
+			.andExpect(status().isCreated())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+		String token = JsonPath.read(response, "$.accessToken");
+		userRepository.delete(userRepository.findByEmail(email).orElseThrow());
+
+		mockMvc.perform(get("/api/users/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+			.andExpect(status().isUnauthorized())
+			.andExpect(jsonPath("$.code").value("ACCOUNT_NOT_FOUND"));
 	}
 
 	@Test
