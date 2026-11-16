@@ -24,3 +24,6 @@ CLAUDE.local.md
 
 # Logs
 *.log
+
+# Uploaded CVs when the backend is started from the repository root
+storage/
