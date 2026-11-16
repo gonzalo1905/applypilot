@@ -33,6 +33,7 @@ public class SecurityConfig {
 			.cors(Customizer.withDefaults())
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
+				.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
 				.anyRequest().authenticated())
 			// Validates "Authorization: Bearer <jwt>" on every request using the JwtDecoder bean.
 			.oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults())
