@@ -26,11 +26,9 @@ stages; see `docs/LEARNING.md` for what each stage added and why.
 - Backend tests: `./mvnw test` (unit, `*Test`) and `./mvnw verify` (adds integration tests,
   `*IT`, which need Docker running). Run `verify` before committing backend changes.
 - API docs: http://localhost:8080/swagger-ui.html
-- Frontend run: `cd frontend && npm start` (http://localhost:4200)
-- Frontend checks: `cd frontend && npm test -- --watch=false` and `npm run build`
-- Maven needs JDK 21. If the default `java` is older, set `JAVA_HOME` to a JDK 21 for that
-  shell only (machine-specific path: see the git-ignored `CLAUDE.local.md`). Never change
-  global or system environment variables.
+- Frontend (in `frontend/`): `npm start` (http://localhost:4200), `npm test -- --watch=false`, `npm run build`
+- Maven needs JDK 21: if the default `java` is older, set `JAVA_HOME` for that shell only (path
+  in the git-ignored `CLAUDE.local.md`). Never change global or system environment variables.
 
 ## Backend conventions
 
