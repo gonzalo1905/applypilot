@@ -5,9 +5,12 @@ import java.time.Instant;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -40,6 +43,23 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(ApiException.class)
 	ResponseEntity<ApiError> handleApiException(ApiException ex, HttpServletRequest request) {
 		return build(ex.getStatus(), ex.getCode(), ex.getMessage(), request, List.of());
+	}
+
+	@ExceptionHandler(AuthenticationException.class)
+	ResponseEntity<ApiError> handleUnauthenticated(AuthenticationException ex, HttpServletRequest request) {
+		// One generic message for every cause (missing, expired or forged token) so the
+		// response does not help an attacker tell them apart.
+		ResponseEntity<ApiError> response = build(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED",
+				"Authentication is required to access this resource", request, List.of());
+		return ResponseEntity.status(response.getStatusCode())
+			.header(HttpHeaders.WWW_AUTHENTICATE, "Bearer")
+			.body(response.getBody());
+	}
+
+	@ExceptionHandler(AccessDeniedException.class)
+	ResponseEntity<ApiError> handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
+		return build(HttpStatus.FORBIDDEN, "FORBIDDEN", "You do not have permission to access this resource",
+				request, List.of());
 	}
 
 	@ExceptionHandler(Exception.class)
