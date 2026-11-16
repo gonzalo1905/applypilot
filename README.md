@@ -23,6 +23,8 @@ frontend/            Angular single-page application
 docs/                Project documentation and learning log
 docker-compose.yml   Local infrastructure (PostgreSQL)
 .env.example         Template for local environment variables
+CLAUDE.md            Project conventions for Claude Code
+.claude/skills/      Project skills (reusable recipes for Claude Code)
 ```
 
 ## Prerequisites
@@ -67,9 +69,22 @@ docker-compose.yml   Local infrastructure (PostgreSQL)
    npm start
    ```
 
+## What works today
+
+- Register, log in and log out; the session survives a page reload.
+- Protected `/board` page with the five Kanban columns (empty for now).
+- API documentation at http://localhost:8080/swagger-ui.html once the backend is running.
+
+| Method | Path                 | Auth   | Description                      |
+|--------|----------------------|--------|----------------------------------|
+| POST   | `/api/auth/register` | public | Create an account, returns a JWT |
+| POST   | `/api/auth/login`    | public | Log in, returns a JWT            |
+| GET    | `/api/users/me`      | bearer | Profile of the logged-in user    |
+
 ## Tests
 
 ```bash
+cd backend && ./mvnw test       # unit tests only (fast, no Docker)
 cd backend && ./mvnw verify     # unit + integration tests (Docker must be running)
 cd frontend && npm test         # unit tests
 cd frontend && npm run build    # production build

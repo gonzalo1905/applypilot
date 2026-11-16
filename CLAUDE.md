@@ -15,13 +15,15 @@ stages; see `docs/LEARNING.md` for what each stage added and why.
 - `backend/` Spring Boot API, base package `com.applypilot`
 - `frontend/` Angular SPA, source in `frontend/src/app`
 - `docs/` documentation; `docs/LEARNING.md` is the learning log (add a section per stage)
-- `.claude/skills/` project skills (recipes for recurring tasks)
+- `.claude/skills/` project skills; use `add-rest-endpoint` for any new backend endpoint
 
 ## Commands
 
 - Database: `docker compose up -d` (repo root)
 - Backend run: `cd backend && ./mvnw spring-boot:run` (Windows: `.\mvnw.cmd`)
-- Backend tests: `cd backend && ./mvnw verify` (integration tests need Docker running)
+- Backend tests: `./mvnw test` (unit, `*Test`) and `./mvnw verify` (adds integration tests,
+  `*IT`, which need Docker running). Run `verify` before committing backend changes.
+- API docs: http://localhost:8080/swagger-ui.html
 - Frontend run: `cd frontend && npm start` (http://localhost:4200)
 - Frontend checks: `cd frontend && npm test -- --watch=false` and `npm run build`
 - Maven needs JDK 21. If the default `java` is older, set `JAVA_HOME` to a JDK 21 for that
