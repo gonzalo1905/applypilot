@@ -38,7 +38,7 @@ public class AgentRunService {
 
 	/**
 	 * Calls a run needs at the very least: one each for Matcher, Writer and Reviewer, plus an
-	 * analysis. Below this a run could only degrade, so it is refused instead. This is a check,
+	 * analysis (one fewer when the stored analysis is reused). Below this a run could only degrade, so it is refused instead. This is a check,
 	 * not a reservation: a run with retries and revisions can use up to about 19 calls, and
 	 * one that runs out midway still degrades.
 	 */
@@ -131,8 +131,10 @@ public class AgentRunService {
 				if (remaining == 0) {
 					throw new AiDailyLimitReachedException(aiProperties.dailyLimit());
 				}
-				if (remaining < MIN_CALLS_TO_START) {
-					throw new NotEnoughAiCallsException(remaining, MIN_CALLS_TO_START);
+				// Reusing the stored analysis costs nothing, so one call fewer is enough.
+				int needed = postingText == null ? MIN_CALLS_TO_START - 1 : MIN_CALLS_TO_START;
+				if (remaining < needed) {
+					throw new NotEnoughAiCallsException(remaining, needed);
 				}
 			}
 			return new Started(runs.save(new AgentRun(applicationId, userId, clock.instant())).getId(), true);

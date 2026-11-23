@@ -222,10 +222,35 @@ class AgentRunServiceTest {
 		when(model.isConfigured()).thenReturn(true);
 		when(usageLimiter.remaining(USER_ID)).thenReturn(AgentRunService.MIN_CALLS_TO_START - 1);
 
-		assertThatThrownBy(() -> service.start(USER_ID, APPLICATION_ID, null))
+		// New posting text means an analysis call too: 4 are needed.
+		assertThatThrownBy(() -> service.start(USER_ID, APPLICATION_ID, new StartAgentRunRequest(POSTING_TEXT)))
 			.isInstanceOf(AgentRunExceptions.NotEnoughAiCallsException.class)
 			.hasMessageContaining("needs at least 4 AI calls and you have 3 left");
 		assertThat(stored).isEmpty();
+	}
+
+	@Test
+	void startsWithExactlyTheMinimumNumberOfCalls() {
+		when(model.isConfigured()).thenReturn(true);
+		when(usageLimiter.remaining(USER_ID)).thenReturn(AgentRunService.MIN_CALLS_TO_START);
+
+		service.start(USER_ID, APPLICATION_ID, new StartAgentRunRequest(POSTING_TEXT));
+
+		assertThat(stored).hasSize(1);
+	}
+
+	@Test
+	void reusingTheStoredAnalysisNeedsOneCallFewer() {
+		when(model.isConfigured()).thenReturn(true);
+		when(usageLimiter.remaining(USER_ID)).thenReturn(3);
+
+		service.start(USER_ID, APPLICATION_ID, null);
+		assertThat(stored).hasSize(1);
+
+		stored.clear();
+		when(usageLimiter.remaining(USER_ID)).thenReturn(2);
+		assertThatThrownBy(() -> service.start(USER_ID, APPLICATION_ID, null))
+			.hasMessageContaining("needs at least 3 AI calls and you have 2 left");
 	}
 
 	@Test
