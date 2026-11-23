@@ -8,8 +8,6 @@ and drafts a cover letter that only states what your CV can prove.**
 **Live demo: [applypilot-wga.vercel.app](https://applypilot-wga.vercel.app)**. Click **Try the demo**: no sign-up, all
 data is fictitious. The free server sleeps when idle, so the first request can take a minute.
 
-![ApplyPilot flow: board, posting analysis, match score, cover letter, run timeline](docs/screenshots/flow.gif)
-
 ## What it does
 
 1. **Track applications** on a Kanban board (Saved, Applied, Interview, Offer, Rejected) with
@@ -23,14 +21,9 @@ data is fictitious. The free server sleeps when idle, so the first request can t
    - a **Writer** that drafts the letter in the posting's language;
    - a **Reviewer** that sends unsupported claims back for revision.
 
-   Every step is traced: input hash, source, tokens and latency
-   ([timeline](docs/screenshots/06-timeline.png)).
+   Every step is traced: input hash, source, tokens and latency.
 4. **Use it from Claude.** A read-only MCP server lets Claude Desktop or Claude Code list your
    applications and read your match results, with a revocable personal access token.
-
-| Job posting analysis | Match score and verified evidence | Cover letter, approved by the Reviewer |
-|---|---|---|
-| ![Analysis](docs/screenshots/03-analysis.png) | ![Match](docs/screenshots/04-match.png) | ![Letter](docs/screenshots/05-letter.png) |
 
 ## Architecture
 
