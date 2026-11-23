@@ -5,6 +5,8 @@ services:
     name: applypilot-api
     runtime: docker
     plan: free
+    # Same region as the Neon database (AWS us-east-2), so every query stays close.
+    region: ohio
     rootDir: backend
     dockerfilePath: ./Dockerfile
     healthCheckPath: /actuator/health
