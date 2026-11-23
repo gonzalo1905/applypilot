@@ -1,0 +1,142 @@
+# Skills known to the keyword extractor (the fallback used when the AI model is unavailable).
+# One skill per line: the name to show, then alternative spellings, separated by "|".
+# Matching ignores case and only accepts whole words. Lines starting with "#" are ignored.
+# Names that are also ordinary words (C, R, Go, Express, REST, SOLID) are left out or only
+# listed in an unambiguous form, because they would match normal sentences.
+
+# Languages
+Java
+JavaScript|JS
+TypeScript|TS
+Python
+C#|CSharp|C Sharp
+C++|CPP
+Kotlin
+Golang
+Rust
+PHP
+Ruby
+Scala
+Swift
+SQL
+PL/SQL|PLSQL
+Bash|Shell scripting
+HTML|HTML5
+CSS|CSS3
+SCSS|Sass
+
+# Backend
+Spring Boot|SpringBoot
+Spring Framework|Spring MVC
+Spring Security
+Spring Data|Spring Data JPA
+Spring Cloud
+Hibernate
+JPA
+Quarkus
+Micronaut
+Node.js|NodeJS|Node JS
+Express.js|ExpressJS
+NestJS|Nest.js
+Django
+Flask
+FastAPI
+.NET|DotNet|ASP.NET
+Laravel
+Ruby on Rails|Rails
+REST APIs|REST API|RESTful|API REST
+GraphQL
+gRPC
+Microservices|Microservicios
+OAuth2|OAuth 2.0|OAuth
+JWT
+WebSockets|WebSocket
+
+# Frontend
+Angular
+React|React.js|ReactJS
+Vue|Vue.js|VueJS
+Next.js|NextJS
+Svelte
+RxJS
+NgRx
+Redux
+Tailwind CSS|Tailwind
+Bootstrap
+Angular Material
+
+# Data
+PostgreSQL|Postgres
+MySQL
+MariaDB
+Oracle Database|Oracle DB|Oracle
+SQL Server|MSSQL
+MongoDB|Mongo
+Redis
+Elasticsearch|Elastic Search
+Cassandra
+DynamoDB
+Firebase|Firestore
+Flyway
+Liquibase
+
+# Messaging
+Kafka|Apache Kafka
+RabbitMQ
+ActiveMQ
+
+# DevOps and cloud
+Docker
+Kubernetes|K8s
+Terraform
+Ansible
+Jenkins
+GitHub Actions
+GitLab CI|GitLab CI/CD
+CI/CD
+AWS|Amazon Web Services
+Azure|Microsoft Azure
+Google Cloud|GCP
+Linux
+Nginx
+Git
+GitHub
+GitLab
+Maven
+Gradle
+npm
+
+# Testing and quality
+JUnit|JUnit 5
+Mockito
+Testcontainers
+Selenium
+Cypress
+Playwright
+Jest
+Vitest
+Jasmine
+Karma
+SonarQube
+TDD|Test-driven development
+
+# Practices and tools
+Scrum
+Kanban
+Agile|Agile methodologies|Metodologías ágiles
+Jira
+Confluence
+Clean Architecture
+Design Patterns|Patrones de diseño
+SOLID principles|Principios SOLID
+DDD|Domain-Driven Design
+OpenAPI|Swagger
+Figma
+
+# AI
+Machine Learning
+LLM|LLMs|Large Language Models
+Prompt Engineering
+LangChain
+Spring AI
+RAG
