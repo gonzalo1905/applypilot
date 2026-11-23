@@ -47,6 +47,7 @@ jobs:
           CASES: ${{ inputs.cases }}
           ONLY: ${{ inputs.only }}
         run: |
+          ONLY="${ONLY// /}"
           # Inputs become Maven arguments, so only simple values are accepted.
           if ! [[ "$CASES" =~ ^[0-9]*$ && "$ONLY" =~ ^[a-z0-9,-]*$ ]]; then
             echo "::error::cases must be a number and only a list of case ids."

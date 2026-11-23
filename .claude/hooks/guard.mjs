@@ -2,20 +2,25 @@
 //
 // Blocks, before the tool runs:
 //   - reading or editing .env files (real secrets live there; .env.example is fine)
-//   - shell commands that print or copy a .env file
-//   - git commits whose message carries AI attribution (Co-Authored-By an AI, "Generated with")
+//   - shell commands that name a .env file, globs included (`cat .env*`)
+//   - git commits whose message carries AI attribution (Co-Authored-By an AI, "Generated with Claude")
 //   - git pushes while a commit to be pushed carries such a line
 //   - force pushes
 //
 // Protocol: Claude Code sends the tool call as JSON on stdin. Exit code 2 blocks the call and
 // sends the text on stderr back to Claude as the reason; exit code 0 lets it run.
+//
+// It fails open: if the input cannot be read or parsed, the call is allowed, so a bug here
+// never stops all work. It reads command text, so it is a seatbelt against mistakes, not a
+// sandbox against someone determined to get around it (a commit message read from a file
+// with `git commit -F` is only caught later, by the push check).
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
 const ATTRIBUTION = [
-  /^\s*co-authored-by:.*(claude|anthropic|copilot|chatgpt|openai|\bai\b)/im,
-  /generated with/i,
+  /co-authored-by:[^\n]*(claude|anthropic|copilot|chatgpt|openai|\bai\b)/i,
+  /generated (with|by)[^\n]*(claude|copilot|chatgpt|\bai\b)/i,
   /claude\.ai\/code/i,
   /noreply@anthropic\.com/i,
   /\u{1F916}/u,
@@ -28,9 +33,10 @@ function isEnvFile(filePath) {
   return (name === '.env' || name.startsWith('.env.')) && name !== '.env.example';
 }
 
-/** A shell command that names a .env file (other than .env.example). */
+/** A shell command that names a .env file, or a glob that could match one. */
 function commandTouchesEnv(command) {
-  return /(^|[\s"'=/\\])\.env(?!\.example)(\.[\w-]+)?(?=$|[\s"';|&)>])/i.test(command);
+  const withoutTemplate = command.replace(/\.env\.example\b/gi, '');
+  return /(^|[\s"'=/\\])\.en[v?*[]/i.test(withoutTemplate);
 }
 
 function hasAttribution(text) {
@@ -42,8 +48,16 @@ function block(reason) {
   process.exit(2);
 }
 
+function isForcePush(command) {
+  return (
+    /\s(--force|--force-with-lease|--force-if-includes)(\s|=|$)/.test(command) ||
+    /\s-[a-zA-Z]*f[a-zA-Z]*(\s|$)/.test(command) || // -f, -fu, -uf
+    /\s\+\S+/.test(command) // +refspec
+  );
+}
+
 function checkPush(command, cwd) {
-  if (/\s(--force|-f|--force-with-lease)(\s|=|$)/.test(command) || /\s\+\S+/.test(command)) {
+  if (isForcePush(command)) {
     block('force pushes are not allowed in this repository.');
   }
   let messages = '';
@@ -53,6 +67,7 @@ function checkPush(command, cwd) {
       cwd,
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
+      timeout: 10_000,
     });
   } catch {
     return; // Not a git repository or no remote yet: nothing to check.
@@ -67,7 +82,7 @@ function main() {
   try {
     input = JSON.parse(readFileSync(0, 'utf8'));
   } catch {
-    return; // Not a tool call we understand: never block on our own bug.
+    return;
   }
   const tool = input.tool_name ?? '';
   const args = input.tool_input ?? {};
@@ -78,8 +93,11 @@ function main() {
     }
     return;
   }
-  if (tool === 'Grep' && isEnvFile(args.path)) {
-    block('.env files hold real secrets and are off limits.');
+  if (tool === 'Grep') {
+    if (isEnvFile(args.path) || commandTouchesEnv(` ${args.glob ?? ''}`)) {
+      block('.env files hold real secrets and are off limits.');
+    }
+    return;
   }
   if (tool === 'Bash' || tool === 'PowerShell') {
     const command = String(args.command ?? '');
@@ -89,7 +107,7 @@ function main() {
     if (/\bgit\b[^\n|;&]*\bcommit\b/.test(command) && hasAttribution(command)) {
       block('commit messages in this repository carry no AI attribution (no Co-Authored-By, no "Generated with").');
     }
-    if (/\bgit\b[^\n|;&]*\bpush\b/.test(command)) {
+    if (/\bgit\b[^\n|;&]*\bpush\b/.test(command) && !/\bstash\s+push\b/.test(command)) {
       checkPush(command, input.cwd || process.cwd());
     }
   }
