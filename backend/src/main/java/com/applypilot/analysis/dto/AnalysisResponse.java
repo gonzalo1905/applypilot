@@ -12,8 +12,9 @@ import java.util.UUID;
 /**
  * @param source who produced the result: the language model or the keyword fallback
  * @param fallbackReason why the fallback was used; null when {@code source} is LLM
- * @param cached true when this result was reused from an earlier analysis of the same text
- * instead of calling the model again
+ * @param cached true when the analyze request that returned this response reused an earlier
+ * model result for the same text instead of calling the model again. It describes that one
+ * request, so reading the stored analysis later always returns false
  */
 public record AnalysisResponse(
 		UUID id,
