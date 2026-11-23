@@ -1,0 +1,66 @@
+/* Direction 1: Flight Deck. Instrument-grade, dark first, signal-amber accent, mono labels. */
+:root {
+  --font-body: 'Geist', system-ui, sans-serif;
+  --font-display: 'Geist', system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+html[data-theme="dark"] {
+  --bg: #0b0d10;
+  --surface: #111419;
+  --surface-2: #171b21;
+  --border: #252b34;
+  --border-strong: #3a4250;
+  --text: #e8ecf1;
+  --muted: #8d97a6;
+  --accent: #ff8a3d;
+  --on-accent: #14100c;
+  --ok: #3dd68c;
+  --ok-bg: rgb(61 214 140 / 12%);
+  --score-bg: rgb(255 138 61 / 14%);
+  --score-fg: #ffb07a;
+  --c-saved: #8d97a6; --c-applied: #4cc9f0; --c-interview: #ff8a3d; --c-offer: #3dd68c; --c-rejected: #ff5c5c;
+  --shadow: none;
+  --shadow-lg: 0 0 0 1px rgb(255 255 255 / 2%), 0 24px 60px rgb(0 0 0 / 45%);
+}
+html[data-theme="light"] {
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --border: #e1e5ea;
+  --border-strong: #c5ccd6;
+  --text: #0e1116;
+  --muted: #5a6473;
+  --accent: #b04e09;
+  --on-accent: #ffffff;
+  --ok: #0f7a4a;
+  --ok-bg: #e3f5ec;
+  --score-bg: #fdeee3;
+  --score-fg: #9a4307;
+  --c-saved: #5a6473; --c-applied: #0e7fa8; --c-interview: #b04e09; --c-offer: #0f7a4a; --c-rejected: #c62828;
+  --shadow: 0 1px 2px rgb(16 24 40 / 6%);
+  --shadow-lg: 0 20px 50px rgb(16 24 40 / 12%);
+}
+.brand .word { font-weight: 600; letter-spacing: -0.04em; }
+.brand .word span { color: var(--muted); }
+.eyebrow, .evidence h5, .letter h5, .count, .stats span, .when {
+  font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px;
+}
+.page-head h2, .login-card h1 { font-weight: 600; letter-spacing: -0.04em; }
+.col { background: transparent; }
+.col-head .dot { border-radius: 2px; }
+.card { border-left: 2px solid var(--col-color); }
+.btn-primary { box-shadow: 0 0 0 1px rgb(255 138 61 / 40%), 0 8px 24px rgb(255 138 61 / 18%); }
+/* login art: radar sweep */
+.login-art { background:
+  radial-gradient(circle at 50% 55%, rgb(255 138 61 / 10%), transparent 60%),
+  repeating-linear-gradient(0deg, transparent 0 39px, var(--border) 39px 40px),
+  repeating-linear-gradient(90deg, transparent 0 39px, var(--border) 39px 40px), var(--surface); }
+.radar { position: absolute; inset: 0; display: grid; place-items: center; }
+.radar span { position: absolute; border: 1px solid rgb(255 138 61 / 35%); border-radius: 50%; }
+.radar span:nth-child(1) { width: 140px; height: 140px; }
+.radar span:nth-child(2) { width: 280px; height: 280px; }
+.radar span:nth-child(3) { width: 420px; height: 420px; }
+.radar i { position: absolute; width: 210px; height: 2px; left: 50%; top: 50%; transform-origin: 0 50%; transform: rotate(-35deg);
+  background: linear-gradient(90deg, #ff8a3d, transparent); box-shadow: 0 0 30px #ff8a3d; }

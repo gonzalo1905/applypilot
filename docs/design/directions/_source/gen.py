@@ -1,0 +1,192 @@
+"""Generates the three design-direction mockups (static HTML) for ApplyPilot."""
+import os, sys
+
+OUT = sys.argv[1]
+
+# ---------------------------------------------------------------- shared markup
+def board_cards():
+    cols = [
+        ("Saved", "saved", [
+            ("Pagos del Sur", "Desarrollador Backend Semi Senior", ["Lima", "Hybrid"], "Added Nov 23", None),
+            ("Brightlane", "Frontend Developer (Angular)", ["Remote"], "Added Nov 23", 58),
+        ]),
+        ("Applied", "applied", [
+            ("Northwind Payments", "Senior Backend Engineer", ["Remote", "EUR 70-85k"], "Applied Nov 17", 83),
+        ]),
+        ("Interview", "interview", [
+            ("CloudNest", "Platform Engineer", ["Bogota", "Hybrid"], "Interview Thu", 67),
+        ]),
+        ("Offer", "offer", []),
+        ("Rejected", "rejected", [
+            ("Quanta Logistics", "Java Developer", ["Austin", "On-site"], "Closed Oct 24", None),
+        ]),
+    ]
+    html = []
+    for title, key, cards in cols:
+        html.append(f'<div class="col col-{key}"><div class="col-head"><span class="dot"></span><span class="col-title">{title}</span><span class="count">{len(cards)}</span><button class="icon-btn" aria-label="Add to {title}">+</button></div><div class="cards">')
+        if not cards:
+            html.append('<div class="empty"><div class="empty-icon">&#9675;</div><p>No offers yet</p><span>They will land here.</span></div>')
+        for company, role, tags, when, score in cards:
+            score_html = f'<span class="score" title="Match score">{score}</span>' if score else ''
+            tags_html = ''.join(f'<span class="tag">{t}</span>' for t in tags)
+            html.append(f'<article class="card"><div class="card-top"><span class="logo-chip">{company[0]}</span><div class="card-main"><h4>{company}</h4><p>{role}</p></div>{score_html}</div><div class="card-tags">{tags_html}<span class="when">{when}</span></div></article>')
+        html.append('</div></div>')
+    return ''.join(html)
+
+def page(d):
+    return f"""<!doctype html>
+<html lang="en" data-theme="{d['default_theme']}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ApplyPilot · {d['name']}</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="{d['fonts_url']}" rel="stylesheet">
+<link rel="stylesheet" href="../base.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="dir-bar">
+  <div><strong>Direction {d['n']}: {d['name']}</strong> <span>{d['idea']}</span></div>
+  <div class="theme-switch" role="group" aria-label="Theme">
+    <button type="button" data-set="light">Light</button><button type="button" data-set="dark">Dark</button>
+  </div>
+</header>
+
+<section class="screen screen-login" aria-label="Login screen">
+  <div class="login-art" aria-hidden="true">{d['art']}</div>
+  <div class="login-card">
+    <div class="brand">{d['logo_inline']}</div>
+    <h1>{d['login_title']}</h1>
+    <p class="lead">{d['login_lead']}</p>
+    <label>Email<input type="email" value="" placeholder="you@example.com"></label>
+    <label>Password<input type="password" placeholder="••••••••"></label>
+    <button class="btn btn-primary">Sign in</button>
+    <div class="divider"><span>or</span></div>
+    <button class="btn btn-secondary">Try the demo <span class="hint">no sign-up</span></button>
+  </div>
+</section>
+
+<section class="screen screen-app" aria-label="Board screen">
+  <nav class="topbar">
+    <div class="brand">{d['logo_inline']}</div>
+    <div class="nav"><a class="active">Board</a><a>Insights</a><a>Profile</a></div>
+    <div class="top-right"><span class="kbd">⌘K</span><span class="avatar">AR</span></div>
+  </nav>
+  <div class="page-head">
+    <div><p class="eyebrow">{d['eyebrow']}</p><h2>Your applications</h2></div>
+    <div class="stats"><div><b>5</b><span>active</span></div><div><b>83</b><span>best match</span></div><div><b>7/10</b><span>AI calls left</span></div></div>
+    <button class="btn btn-primary">+ Add application</button>
+  </div>
+  <div class="board">{board_cards()}</div>
+</section>
+
+<section class="screen screen-match" aria-label="Match and cover letter">
+  <div class="panel">
+    <div class="panel-head">
+      <div><p class="eyebrow">Northwind Payments · Senior Backend Engineer</p><h3>Match &amp; cover letter</h3></div>
+      <span class="status status-ok">Approved by reviewer</span>
+    </div>
+    <div class="match-grid">
+      <div class="gauge-wrap">
+        <svg viewBox="0 0 120 120" class="gauge" role="img" aria-label="Match score 83 of 100">
+          <circle cx="60" cy="60" r="50" class="gauge-track"/>
+          <circle cx="60" cy="60" r="50" class="gauge-value" pathLength="100" stroke-dasharray="83 100" transform="rotate(-90 60 60)"/>
+          <text x="60" y="66" text-anchor="middle" class="gauge-num">83</text>
+        </svg>
+        <p class="gauge-caption">Strong fit · 4 of 5 required</p>
+      </div>
+      <div class="evidence">
+        <h5>Matched, with proof from your CV</h5>
+        <ul>
+          <li><span class="chip chip-ok">Java</span><q>5 years of experience building REST APIs in Java and Spring Boot</q></li>
+          <li><span class="chip chip-ok">Kafka</span><q>Moved nightly reconciliation to Kafka consumers, cutting processing time by 40%</q></li>
+          <li><span class="chip chip-ok">Docker</span><q>Containerized services with Docker and deployed them with GitHub Actions</q></li>
+        </ul>
+        <h5>Missing</h5>
+        <div class="chips"><span class="chip chip-miss">Kubernetes</span><span class="chip chip-miss">Terraform</span></div>
+      </div>
+    </div>
+    <div class="letter">
+      <div class="letter-head"><h5>Cover letter <span class="muted">EN · 241 words · 1 revision</span></h5><button class="btn btn-ghost">Copy</button></div>
+      <p>Dear Northwind team,</p>
+      <p>At Andes Fintech I built payment APIs with Java 21, Spring Boot and PostgreSQL, and moved our nightly reconciliation to Kafka consumers, cutting processing time by 40%…</p>
+    </div>
+    <ol class="timeline">
+      <li><b>Extractor</b><span>reused</span><em>0.1 s</em></li>
+      <li><b>Matcher</b><span>AI · 3 tool calls</span><em>3.4 s</em></li>
+      <li><b>Writer</b><span>AI</span><em>1.4 s</em></li>
+      <li><b>Reviewer</b><span>AI · approved</span><em>1.4 s</em></li>
+    </ol>
+  </div>
+</section>
+
+<script>
+document.querySelectorAll('[data-set]').forEach(b => b.addEventListener('click', () => {{
+  document.documentElement.dataset.theme = b.dataset.set;
+}}));
+</script>
+</body>
+</html>
+"""
+
+# ---------------------------------------------------------------- directions
+DIRECTIONS = [
+    dict(
+        n=1, slug="flight-deck", name="Flight Deck", default_theme="dark",
+        idea="A cockpit for your job search: precise, calm, instrument-grade. Dark first.",
+        fonts_url="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap",
+        eyebrow="Flight plan · week 47",
+        login_title="Cleared for take-off",
+        login_lead="Track every application and let an AI crew match your CV and draft honest cover letters.",
+        art='<div class="radar"><span></span><span></span><span></span><i></i></div>',
+    ),
+    dict(
+        n=2, slug="editorial", name="Field Notes", default_theme="light",
+        idea="Warm paper, serif headlines, ink-green accents: a career journal, not a dashboard.",
+        fonts_url="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap",
+        eyebrow="Tuesday, 23 November",
+        login_title="Every application, <em>well told.</em>",
+        login_lead="A quiet place to track your search, with an AI editor that only writes what your CV can prove.",
+        art='<div class="notes"><p class="n1">“Matched on Java, Kafka, Docker.”</p><p class="n2">Score 83 · approved</p></div>',
+    ),
+    dict(
+        n=3, slug="aurora", name="Aurora", default_theme="dark",
+        idea="Bold gradients and glass on deep indigo: an AI-native product that feels alive.",
+        fonts_url="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap",
+        eyebrow="Your pipeline",
+        login_title="Land the job.<br>Let the agents do the busywork.",
+        login_lead="Match your CV to every posting and get a cover letter that a reviewer agent has fact-checked.",
+        art='<div class="orbs"><span></span><span></span><span></span></div>',
+    ),
+]
+
+# ---------------------------------------------------------------- logos
+LOGOS = {
+"flight-deck": dict(
+mark='''<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#FF8A3D"/><path d="M8.5 23.5 16 8l7.5 15.5" fill="none" stroke="#14100C" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M11.6 18h8.8" stroke="#14100C" stroke-width="3.2" stroke-linecap="round"/></svg>''',
+word='<span class="word">apply<span>pilot</span></span>'),
+"editorial": dict(
+mark='''<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#2F6B4F"/><path d="M16 5.5c.9 5.6 4.9 9.6 10.5 10.5-5.6.9-9.6 4.9-10.5 10.5-.9-5.6-4.9-9.6-10.5-10.5C11.1 15.1 15.1 11.1 16 5.5Z" fill="#F6F2EA"/></svg>''',
+word='<span class="word">ApplyPilot</span>'),
+"aurora": dict(
+mark='''<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="ag" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C5CFF"/><stop offset=".55" stop-color="#FF5CA8"/><stop offset="1" stop-color="#FF9A3D"/></linearGradient></defs><rect width="32" height="32" rx="9" fill="url(#ag)"/><path d="M7.5 15.6 24.5 8l-5.2 16.8-4-6.2-7.8-3Z" fill="#fff"/><path d="m15.3 18.6 9.2-10.6" stroke="#7C5CFF" stroke-width="1.6" stroke-linecap="round"/></svg>''',
+word='<span class="word">ApplyPilot</span>'),
+}
+
+base = open(os.path.join(os.path.dirname(__file__), 'base.css'), encoding='utf-8').read()
+os.makedirs(OUT, exist_ok=True)
+open(os.path.join(OUT, 'base.css'), 'w', encoding='utf-8').write(base)
+for d in DIRECTIONS:
+    folder = os.path.join(OUT, d['slug'])
+    os.makedirs(folder, exist_ok=True)
+    logo = LOGOS[d['slug']]
+    d['logo_inline'] = f'<span class="mark">{logo["mark"]}</span>{logo["word"]}'
+    open(os.path.join(folder, 'favicon.svg'), 'w', encoding='utf-8').write(logo['mark'])
+    open(os.path.join(folder, 'logo.svg'), 'w', encoding='utf-8').write(logo['mark'])
+    css = open(os.path.join(os.path.dirname(__file__), f"{d['slug']}.css"), encoding='utf-8').read()
+    open(os.path.join(folder, 'style.css'), 'w', encoding='utf-8').write(css)
+    open(os.path.join(folder, 'index.html'), 'w', encoding='utf-8').write(page(d))
+print('generated', [d['slug'] for d in DIRECTIONS])

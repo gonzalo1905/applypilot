@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ApplyPilot · Design directions</title>
+<style>
+  :root { color-scheme: light dark; --bg: #f6f6f4; --text: #16181d; --muted: #5c6370; --border: #dcdee3; --surface: #fff; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #0e0f12; --text: #eceef2; --muted: #9aa1ad; --border: #262a31; --surface: #15171b; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.55 system-ui, sans-serif; }
+  main { max-width: 1240px; margin: 0 auto; padding: 48px 24px 80px; }
+  h1 { font-size: 34px; letter-spacing: -0.02em; margin: 0 0 8px; }
+  .intro { color: var(--muted); max-width: 70ch; margin: 0 0 40px; }
+  section { border: 1px solid var(--border); border-radius: 16px; background: var(--surface); padding: 28px; margin-bottom: 32px; }
+  section h2 { margin: 0; font-size: 24px; }
+  .meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin: 16px 0 20px; }
+  .meta div { font-size: 14px; }
+  .meta b { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 4px; }
+  .swatches { display: flex; gap: 6px; flex-wrap: wrap; }
+  .sw { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border); }
+  .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .shots img { width: 100%; border-radius: 10px; border: 1px solid var(--border); display: block; }
+  .shots figure { margin: 0; }
+  figcaption { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  a { color: inherit; }
+  .open { display: inline-block; margin-top: 8px; font-weight: 600; }
+  @media (max-width: 720px) { .shots { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>ApplyPilot: three visual directions</h1>
+  <p class="intro">Same screens, same content, three identities. Each has its own logo (it works at 16 px as a
+    favicon), an open-licence type pairing from Google Fonts that we can self-host with Fontsource, and
+    light and dark palettes whose key text pairs pass WCAG AA. Open a direction to toggle light and dark.
+    Pick one (or a mix) and it becomes the design system for the whole app.</p>
+  <figure><img src="favicons.png" alt="The three marks at 16, 32 and 64 pixels" style="max-width:760px;width:100%;border-radius:10px;border:1px solid var(--border)"><figcaption>The marks at favicon sizes: 16, 32 and 64 px.</figcaption></figure>
+
+  <section>
+    <h2>1 · Flight Deck</h2>
+    <p>A cockpit for the job search: precise, calm, instrument-grade. Dark first, one signal-amber accent,
+      monospace labels like flight instruments. Closest to Linear and Raycast.</p>
+    <div class="meta">
+      <div><b>Fonts</b>Geist (UI and headings) + Geist Mono (labels, numbers). SIL OFL.</div>
+      <div><b>Logo</b>An "A" drawn as a climbing route on an amber tile: apply + take-off.</div>
+      <div><b>Palette</b><span class="swatches"><span class="sw" style="background:#0b0d10"></span><span class="sw" style="background:#171b21"></span><span class="sw" style="background:#ff8a3d"></span><span class="sw" style="background:#4cc9f0"></span><span class="sw" style="background:#3dd68c"></span><span class="sw" style="background:#f5f6f8"></span></span></div>
+    </div>
+    <div class="shots">
+      <figure><img src="flight-deck-login-dark.png" alt=""><figcaption>Login · dark</figcaption></figure>
+      <figure><img src="flight-deck-app-dark.png" alt=""><figcaption>Board · dark</figcaption></figure>
+      <figure><img src="flight-deck-match-dark.png" alt=""><figcaption>Match and letter · dark</figcaption></figure>
+      <figure><img src="flight-deck-app-light.png" alt=""><figcaption>Board · light</figcaption></figure>
+    </div>
+    <a class="open" href="flight-deck/index.html">Open the live mockup →</a>
+  </section>
+
+  <section>
+    <h2>2 · Field Notes</h2>
+    <p>A career journal rather than a dashboard: warm paper, serif headlines, ink-green accents, generous
+      spacing. Human and trustworthy, the opposite of "generic SaaS". Light first.</p>
+    <div class="meta">
+      <div><b>Fonts</b>Instrument Serif (headings, letter) + Inter (UI). SIL OFL.</div>
+      <div><b>Logo</b>A four-point north star in a green seal: guidance, not hype.</div>
+      <div><b>Palette</b><span class="swatches"><span class="sw" style="background:#f6f2ea"></span><span class="sw" style="background:#fffdf8"></span><span class="sw" style="background:#2f6b4f"></span><span class="sw" style="background:#b5522f"></span><span class="sw" style="background:#1e1b16"></span><span class="sw" style="background:#15130f"></span></span></div>
+    </div>
+    <div class="shots">
+      <figure><img src="editorial-login-light.png" alt=""><figcaption>Login · light</figcaption></figure>
+      <figure><img src="editorial-app-light.png" alt=""><figcaption>Board · light</figcaption></figure>
+      <figure><img src="editorial-match-light.png" alt=""><figcaption>Match and letter · light</figcaption></figure>
+      <figure><img src="editorial-app-dark.png" alt=""><figcaption>Board · dark</figcaption></figure>
+    </div>
+    <a class="open" href="editorial/index.html">Open the live mockup →</a>
+  </section>
+
+  <section>
+    <h2>3 · Aurora</h2>
+    <p>AI-native and energetic: deep indigo, a violet-pink-orange gradient used as light (glows, rings,
+      headlines), glass surfaces. The most "wow" on a portfolio, and the busiest. Dark first.</p>
+    <div class="meta">
+      <div><b>Fonts</b>Plus Jakarta Sans (UI and headings) + JetBrains Mono (numbers). SIL OFL.</div>
+      <div><b>Logo</b>A paper plane on the gradient tile: send applications, fly further.</div>
+      <div><b>Palette</b><span class="swatches"><span class="sw" style="background:#0c0a19"></span><span class="sw" style="background:#7c5cff"></span><span class="sw" style="background:#ff5ca8"></span><span class="sw" style="background:#ff9a3d"></span><span class="sw" style="background:#4ade9a"></span><span class="sw" style="background:#f7f6fd"></span></span></div>
+    </div>
+    <div class="shots">
+      <figure><img src="aurora-login-dark.png" alt=""><figcaption>Login · dark</figcaption></figure>
+      <figure><img src="aurora-app-dark.png" alt=""><figcaption>Board · dark</figcaption></figure>
+      <figure><img src="aurora-match-dark.png" alt=""><figcaption>Match and letter · dark</figcaption></figure>
+      <figure><img src="aurora-app-light.png" alt=""><figcaption>Board · light</figcaption></figure>
+    </div>
+    <a class="open" href="aurora/index.html">Open the live mockup →</a>
+  </section>
+</main>
+</body>
+</html>

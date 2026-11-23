@@ -1,0 +1,67 @@
+/* Direction 2: Field Notes. Warm paper, serif display, ink-green accent, generous spacing. */
+:root {
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-mono: ui-monospace, 'SFMono-Regular', monospace;
+  --radius: 18px;
+  --radius-sm: 12px;
+}
+html[data-theme="light"] {
+  --bg: #f6f2ea;
+  --surface: #fffdf8;
+  --surface-2: #f1ebdf;
+  --border: #e3dacb;
+  --border-strong: #c9bda8;
+  --text: #1e1b16;
+  --muted: #6b6355;
+  --accent: #2f6b4f;
+  --on-accent: #fffdf8;
+  --ok: #2f6b4f;
+  --ok-bg: #e2eee6;
+  --score-bg: #e2eee6;
+  --score-fg: #24523d;
+  --c-saved: #9a8f7c; --c-applied: #3b5ba5; --c-interview: #b5522f; --c-offer: #2f6b4f; --c-rejected: #8c2b20;
+  --shadow: 0 1px 0 rgb(30 27 22 / 4%);
+  --shadow-lg: 0 30px 60px -20px rgb(60 45 20 / 25%);
+}
+html[data-theme="dark"] {
+  --bg: #15130f;
+  --surface: #1d1a15;
+  --surface-2: #26221b;
+  --border: #353026;
+  --border-strong: #4d4637;
+  --text: #efe8db;
+  --muted: #a99f8c;
+  --accent: #7cc4a0;
+  --on-accent: #10231a;
+  --ok: #7cc4a0;
+  --ok-bg: rgb(124 196 160 / 14%);
+  --score-bg: rgb(124 196 160 / 14%);
+  --score-fg: #9fd8b9;
+  --c-saved: #a99f8c; --c-applied: #8fa8e8; --c-interview: #e08a63; --c-offer: #7cc4a0; --c-rejected: #e2776a;
+  --shadow: none;
+  --shadow-lg: 0 30px 60px -20px rgb(0 0 0 / 60%);
+}
+body { font-size: 15px; }
+h1, h2, h3, .brand .word, .stats b, .gauge-num { font-weight: 400; letter-spacing: -0.01em; }
+.login-card h1 { font-size: 54px; }
+.login-card h1 em { font-style: italic; color: var(--accent); }
+.page-head h2 { font-size: 40px; }
+.panel-head h3 { font-size: 30px; }
+.brand .word { font-size: 24px; }
+.stats b { font-size: 26px; }
+.eyebrow { font-style: italic; font-family: var(--font-display); font-size: 16px; }
+.screen { padding: 3rem 3.5rem; }
+.col { background: transparent; border: 0; border-top: 2px solid var(--col-color); border-radius: 0; padding: 0.85rem 0 0; }
+.card { background: var(--surface); }
+.btn { border-radius: 999px; }
+.btn-primary { padding: 0.7rem 1.3rem; }
+.letter { font-family: var(--font-display); font-size: 19px; line-height: 1.5; background: var(--surface); }
+.letter p:first-of-type { font-style: italic; }
+/* login art: notebook */
+.login-art { background:
+  repeating-linear-gradient(180deg, transparent 0 31px, var(--border) 31px 32px), var(--surface);
+  display: grid; place-items: center; }
+.notes { position: relative; transform: rotate(-2deg); background: var(--bg); padding: 2rem 2.25rem; border-radius: 6px; box-shadow: var(--shadow-lg); border: 1px solid var(--border); max-width: 360px; }
+.notes .n1 { font-family: var(--font-display); font-size: 30px; line-height: 1.15; }
+.notes .n2 { margin-top: 1rem; color: var(--accent); font-weight: 600; }
