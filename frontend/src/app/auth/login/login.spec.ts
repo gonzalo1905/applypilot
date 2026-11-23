@@ -16,11 +16,11 @@ const user: User = {
 describe('Login', () => {
   let fixture: ComponentFixture<Login>;
   let page: HTMLElement;
-  let auth: { login: ReturnType<typeof vi.fn> };
+  let auth: { login: ReturnType<typeof vi.fn>; loginAsDemo: ReturnType<typeof vi.fn> };
   let navigateByUrl: ReturnType<typeof vi.spyOn>;
 
   async function render(returnUrl: string | null = null): Promise<void> {
-    auth = { login: vi.fn(() => of(user)) };
+    auth = { login: vi.fn(() => of(user)), loginAsDemo: vi.fn(() => of(user)) };
     await TestBed.configureTestingModule({
       imports: [Login],
       providers: [
@@ -145,5 +145,42 @@ describe('Login', () => {
     await submit();
 
     expect(page.querySelector('[role="alert"]')?.textContent).toContain('Cannot reach the server');
+  });
+  it('opens the board in the demo account without a password', async () => {
+    await render();
+
+    const demo = Array.from(page.querySelectorAll('button')).find(
+      (button) => button.textContent?.trim() === 'Try the demo',
+    )!;
+    demo.click();
+    await fixture.whenStable();
+
+    expect(auth.loginAsDemo).toHaveBeenCalled();
+    expect(auth.login).not.toHaveBeenCalled();
+    expect(navigateByUrl).toHaveBeenCalledWith('/board');
+  });
+
+  it('shows the API message when there is no demo account', async () => {
+    await render();
+    auth.loginAsDemo.mockReturnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 404,
+            error: {
+              status: 404,
+              code: 'DEMO_UNAVAILABLE',
+              message: 'There is no demo account on this server',
+            },
+          }),
+      ),
+    );
+
+    Array.from(page.querySelectorAll('button'))
+      .find((button) => button.textContent?.trim() === 'Try the demo')!
+      .click();
+    await fixture.whenStable();
+
+    expect(page.querySelector('[role="alert"]')?.textContent).toContain('There is no demo account');
   });
 });

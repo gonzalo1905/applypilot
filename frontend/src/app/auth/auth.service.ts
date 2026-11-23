@@ -49,6 +49,13 @@ export class AuthService {
       .pipe(map((response) => this.startSession(response)));
   }
 
+  /** "Try the demo": a session in the shared demo account, which has no password. */
+  loginAsDemo(): Observable<User> {
+    return this.http
+      .post<AuthResponse>(`${environment.apiUrl}/auth/demo`, null)
+      .pipe(map((response) => this.startSession(response)));
+  }
+
   register(request: RegisterRequest): Observable<User> {
     return this.http
       .post<AuthResponse>(`${environment.apiUrl}/auth/register`, request)

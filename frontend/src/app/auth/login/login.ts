@@ -39,6 +39,18 @@ export class Login {
     });
   }
 
+  protected tryDemo(): void {
+    this.submitting.set(true);
+    this.errorMessage.set(null);
+    this.auth.loginAsDemo().subscribe({
+      next: () => void this.router.navigateByUrl('/board'),
+      error: (error: unknown) => {
+        this.errorMessage.set(toErrorMessage(error));
+        this.submitting.set(false);
+      },
+    });
+  }
+
   /** Where to go after login. Only in-app paths are accepted, to avoid open redirects. */
   private returnUrl(): string {
     const requested = this.route.snapshot.queryParamMap.get('returnUrl');

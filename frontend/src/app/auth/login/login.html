@@ -46,6 +46,18 @@
       </button>
     </form>
 
+    <div class="demo">
+      <p class="demo-text">Just looking? Explore a demo account with fictitious data.</p>
+      <button
+        class="btn btn-ghost btn-block"
+        type="button"
+        [disabled]="submitting()"
+        (click)="tryDemo()"
+      >
+        Try the demo
+      </button>
+    </div>
+
     <p class="auth-footer">New to ApplyPilot? <a routerLink="/register">Create an account</a></p>
   </section>
 </main>
