@@ -98,11 +98,30 @@ public class AgentRunOrchestrator {
 		}
 		catch (ApiException ex) {
 			// Expected problems (no CV, no analysis, daily limit during extraction...).
-			recorder.finish(runId, RunStatus.FAILED, ex.getCode());
+			finishSafely(runId, RunStatus.FAILED, ex.getCode());
+		}
+		catch (Throwable ex) {
+			// Only the class: messages of database or parser errors can quote user data.
+			log.error("Agent run {} failed: {}", runId, ex.getClass().getName());
+			log.debug("Agent run {} failure details", runId, ex);
+			finishSafely(runId, RunStatus.FAILED, "INTERNAL_ERROR");
+			if (ex instanceof Error error) {
+				throw error;
+			}
+		}
+	}
+
+	/**
+	 * A run must never stay RUNNING because recording its end failed: that would block new
+	 * runs of the application. If even this fails, {@link AgentRunService} treats the run as
+	 * stale after a while.
+	 */
+	private void finishSafely(UUID runId, RunStatus status, String errorCode) {
+		try {
+			recorder.finish(runId, status, errorCode);
 		}
 		catch (RuntimeException ex) {
-			log.error("Agent run {} failed: {}", runId, ex.getClass().getSimpleName(), ex);
-			recorder.finish(runId, RunStatus.FAILED, "INTERNAL_ERROR");
+			log.error("Could not record the end of agent run {}: {}", runId, ex.getClass().getName());
 		}
 	}
 

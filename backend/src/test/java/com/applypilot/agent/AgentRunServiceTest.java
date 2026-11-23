@@ -160,6 +160,21 @@ class AgentRunServiceTest {
 	}
 
 	@Test
+	void anActiveRunOlderThanAnyRealRunIsFailedAndNoLongerBlocksANewOne() {
+		AgentRun stale = new AgentRun(APPLICATION_ID, USER_ID, NOW.minus(AgentRunService.STALE_AFTER).minusSeconds(1));
+		ReflectionTestUtils.setField(stale, "id", UUID.randomUUID());
+		stale.start(NOW.minus(AgentRunService.STALE_AFTER));
+		when(runs.findFirstByApplicationIdAndUserIdAndStatusIn(any(), any(), any())).thenReturn(Optional.of(stale));
+
+		AgentRunResponse response = service.start(USER_ID, APPLICATION_ID, null);
+
+		assertThat(stale.getStatus()).isEqualTo(RunStatus.FAILED);
+		assertThat(stale.getErrorCode()).isEqualTo("TIMED_OUT");
+		assertThat(response.id()).isNotEqualTo(stale.getId());
+		verify(executor).submit(any());
+	}
+
+	@Test
 	void refusesWithCvRequiredWhenTheUserHasNoCv() {
 		when(cvs.findByUserId(USER_ID)).thenReturn(Optional.empty());
 

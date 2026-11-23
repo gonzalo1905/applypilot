@@ -27,9 +27,10 @@ import tools.jackson.databind.json.JsonMapper;
  * <li><b>Research.</b> Up to {@value #MAX_ROUNDS} conversation rounds and
  * {@value #MAX_TOOL_CALLS} tool calls. A call over the budget is not run; the model is told
  * to answer instead.</li>
- * <li><b>Answer.</b> If the model's last message is a valid answer, it is used. Otherwise one
+ * <li><b>Answer.</b> If the model's last message is a valid answer with a verdict for every
+ * skill, it is used. Otherwise one
  * structured call (strict JSON schema, no tools) gets the facts collected so far, with one
- * retry if its answer is invalid. Groq does not combine tools and strict schemas in one
+ * retry if its answer is invalid. A skill still without a verdict then counts as missing. Groq does not combine tools and strict schemas in one
  * request, hence the separate call.</li>
  * <li><b>Verify.</b> {@link MatchScoring} checks every quote against the CV and computes the
  * score in code.</li>
@@ -119,10 +120,13 @@ public class MatcherAgent {
 					new ConversationRequest(SYSTEM_PROMPT, messages, CvTools.SPECS));
 			if (!completion.hasToolCalls()) {
 				Parsed<MatcherAnswer> parsed = answers.parse(completion.content(), MatcherAnswer.class);
-				if (parsed.isValid()) {
+				if (parsed.isValid() && coversEverySkill(posting, parsed.value())) {
 					return score(posting, parsed.value(), cvText);
 				}
-				log.warn("Matcher research answer rejected, asking for a structured answer: {}", parsed.problem());
+				// An answer that skips skills would look like a confident "missing" for each of
+				// them, so it is not accepted here.
+				log.warn("Matcher research answer rejected, asking for a structured answer: {}",
+						parsed.isValid() ? "verdicts missing for some skills" : parsed.problem());
 				break;
 			}
 			messages.add(new ConversationMessage.Assistant(completion.content(), completion.toolCalls()));
@@ -165,6 +169,14 @@ public class MatcherAgent {
 		MatcherAnswer answer = model.completeValidated(meter,
 				new ChatCompletionRequest(ANSWER_PROMPT, userPrompt, schema), MatcherAnswer.class);
 		return score(posting, answer, cvText);
+	}
+
+	/** True when the answer has a verdict for every skill of the posting. */
+	static boolean coversEverySkill(ExtractedPosting posting, MatcherAnswer answer) {
+		java.util.Set<String> answered = new java.util.HashSet<>();
+		answer.skills().forEach(verdict -> answered.add(verdict.skill().strip().toLowerCase(java.util.Locale.ROOT)));
+		return skillNames(posting).stream()
+			.allMatch(skill -> answered.contains(skill.strip().toLowerCase(java.util.Locale.ROOT)));
 	}
 
 	private static MatchResult score(ExtractedPosting posting, MatcherAnswer answer, String cvText) {

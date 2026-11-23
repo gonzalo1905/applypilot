@@ -14,6 +14,7 @@ import com.applypilot.application.JobApplicationRepository;
 import com.applypilot.common.ai.AiProperties;
 import com.applypilot.cv.CvRepository;
 import java.time.Clock;
+import java.time.Duration;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.UUID;
@@ -30,6 +31,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class AgentRunService {
 
 	private static final Set<RunStatus> ACTIVE = EnumSet.of(RunStatus.PENDING, RunStatus.RUNNING);
+
+	/** A run still active after this long is considered dead and no longer blocks new runs. */
+	static final Duration STALE_AFTER = Duration.ofMinutes(15);
 
 	private final AgentRunRepository runs;
 
@@ -99,7 +103,12 @@ public class AgentRunService {
 			requireOwnedApplication(userId, applicationId);
 			var active = runs.findFirstByApplicationIdAndUserIdAndStatusIn(applicationId, userId, ACTIVE);
 			if (active.isPresent()) {
-				return new Started(active.get().getId(), false);
+				AgentRun existing = active.get();
+				if (existing.getCreatedAt().isAfter(clock.instant().minus(STALE_AFTER))) {
+					return new Started(existing.getId(), false);
+				}
+				// Far longer than any run takes: its worker is gone, so it must not block new runs.
+				existing.finish(RunStatus.FAILED, "TIMED_OUT", clock.instant());
 			}
 			if (cvs.findByUserId(userId).isEmpty()) {
 				throw new CvRequiredException();

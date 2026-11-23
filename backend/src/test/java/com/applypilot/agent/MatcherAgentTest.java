@@ -115,18 +115,32 @@ class MatcherAgentTest {
 
 	@Test
 	void skillsTheModelInventsAreIgnoredAndSkillsItForgetsCountAsMissing() {
-		fake.answers("""
+		String partial = """
 				{"skills": [
 				  {"skill": "java", "matched": true, "evidence": "Skills: Java, Spring Boot"},
 				  {"skill": "COBOL", "matched": true, "evidence": "Skills: Java"}
 				], "summary": "Partial."}
-				""");
+				""";
+		// The research answer skips skills, so a structured answer is requested; if that one
+		// skips them too, they count as missing.
+		fake.answers(partial, partial);
 
 		MatchResult result = matcher.match(meter, POSTING, CV);
 
+		assertThat(fake.structuredRequests).hasSize(1);
 		assertThat(result.matchedSkills()).extracting(MatchResult.MatchedSkill::skill).containsExactly("Java");
 		assertThat(result.missingSkills()).extracting(MatchResult.MissingSkill::skill)
 			.containsExactly("Spring Boot", "Kafka", "Docker");
+	}
+
+	@Test
+	void anAnswerWithoutVerdictsIsNotTakenAsEverySkillMissing() {
+		fake.answers("{\"skills\": [], \"summary\": \"Nothing to say.\"}", VALID_ANSWER);
+
+		MatchResult result = matcher.match(meter, POSTING, CV);
+
+		assertThat(fake.structuredRequests).hasSize(1);
+		assertThat(result.score()).isEqualTo(71);
 	}
 
 	@Test

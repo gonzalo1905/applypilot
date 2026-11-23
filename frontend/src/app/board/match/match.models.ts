@@ -120,5 +120,6 @@ export const RUN_ERROR_LABELS: Record<string, string> = {
   ANALYSIS_NOT_FOUND: 'The job posting analysis was removed. Analyze the posting again.',
   AI_DAILY_LIMIT_REACHED: "Today's AI calls are used up. Try again tomorrow.",
   INTERRUPTED: 'The server restarted while the run was working. Start it again.',
+  TIMED_OUT: 'The run stopped responding and was cancelled. Start it again.',
   AGENT_RUNS_BUSY: 'Too many runs were waiting. Start it again in a minute.',
 };

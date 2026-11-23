@@ -60,9 +60,12 @@ class WriterAndReviewerTest {
 
 		writer.write(meter, POSTING, POSTING_TEXT, CV, MATCH, new CoverLetterDraft("es", LETTER), feedback);
 
+		// Free-form suggestions are not forwarded: the Reviewer read the posting, which may try to
+		// steer it, and the Writer must not take them as instructions.
 		assertThat(fake.structuredRequests.get(0).userPrompt()).contains("<previous_letter>\nDear Acme team",
-				"<reviewer_feedback>", "Name a concrete project")
-			.endsWith("fixing every point of the reviewer feedback.");
+				"<reviewer_feedback>", "Too generic", "toneIssues")
+			.doesNotContain("Name a concrete project")
+			.endsWith("addressing the reviewer feedback.");
 	}
 
 	@Test

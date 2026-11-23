@@ -128,8 +128,7 @@ class AgentRunOrchestratorTest {
 
 		orchestrator.execute(RUN_ID, null);
 
-		assertThat(fake.structuredRequests.get(2).userPrompt()).contains("<reviewer_feedback>",
-				"Name the payments project");
+		assertThat(fake.structuredRequests.get(2).userPrompt()).contains("<reviewer_feedback>", "Too generic");
 		verify(recorder).lettered(eq(RUN_ID), eq(new CoverLetterDraft("en", LETTER + " Better.")), anyString(), eq(1));
 	}
 
@@ -238,6 +237,16 @@ class AgentRunOrchestratorTest {
 
 		verify(recorder, never()).finish(any(), any(), any());
 		verify(analysisService, never()).get(any(), any());
+	}
+
+	@Test
+	void aFailureWhileRecordingTheEndStillTriesToMarkTheRunFailed() {
+		fake.answers(MATCH_ANSWER, draftJson("en", LETTER), approval(true));
+		doThrow(new IllegalStateException("database down")).when(recorder).finish(RUN_ID, RunStatus.SUCCEEDED, null);
+
+		orchestrator.execute(RUN_ID, null);
+
+		verify(recorder).finish(RUN_ID, RunStatus.FAILED, "INTERNAL_ERROR");
 	}
 
 	@Test
