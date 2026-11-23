@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
  * that said "write the letter in English" and an English CV, the model wrote in English.
  * Small and deterministic; knows the languages this app's users post in.
  */
-final class PostingLanguage {
+public final class PostingLanguage {
 
 	private static final Map<String, Set<String>> MARKERS = Map.of(
 			"en", Set.of("the", "and", "with", "you", "our", "we", "will", "for", "experience", "required", "skills",
@@ -29,7 +29,7 @@ final class PostingLanguage {
 	}
 
 	/** Two-letter code of the best-scoring language, or null when the text gives no clear signal. */
-	static String detect(String text) {
+	public static String detect(String text) {
 		Map<String, Integer> scores = new java.util.HashMap<>();
 		for (String word : WORDS.split(text.toLowerCase(Locale.ROOT))) {
 			MARKERS.forEach((language, markers) -> {
