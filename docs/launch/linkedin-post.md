@@ -1,6 +1,6 @@
 # LinkedIn post: draft (not published)
 
-Attach the screenshots from `docs/screenshots/`.
+Attach screenshots of the redesigned app (to be captured after the visual redesign).
 For a carousel, use this order: board, analysis, match, letter.
 
 ---
