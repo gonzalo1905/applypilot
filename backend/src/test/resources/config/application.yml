@@ -1,0 +1,7 @@
+# Loaded in addition to the main application.yml for every test (classpath:/config/ has
+# higher precedence), so tests can never reach a real AI provider, even when a developer's
+# .env holds a real key.
+spring:
+  ai:
+    openai:
+      api-key: not-configured
