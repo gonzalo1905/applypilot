@@ -1,0 +1,874 @@
+{
+  "datasetVersion" : 1,
+  "model" : "openai/gpt-oss-120b",
+  "startedAt" : "2026-11-23T17:58:32.171373400Z",
+  "durationSeconds" : 933,
+  "rateLimitRetries" : 0,
+  "pacingWaitSeconds" : 827,
+  "summary" : {
+    "cases" : 12,
+    "validOutputRate" : 0.9666666666666667,
+    "extractionPrecision" : 1.0,
+    "extractionRecall" : 1.0,
+    "matchingPrecision" : 1.0,
+    "matchingRecall" : 1.0,
+    "averageScoreStrongMatch" : 87.5,
+    "averageScoreMismatch" : 9.0,
+    "rejectedQuotes" : 0,
+    "languageAccuracy" : 1.0,
+    "lettersWithUnsupportedClaims" : 11,
+    "lettersWithUnknownNumbers" : 7,
+    "reviewerJudgeAgreement" : 0.9166666666666666,
+    "casesWithLeaks" : 1,
+    "modelCalls" : 85,
+    "promptTokens" : 64086,
+    "completionTokens" : 21747,
+    "averageExtractorMs" : 1341,
+    "averageMatcherMs" : 2879,
+    "averageWriterMs" : 1419,
+    "averageReviewerMs" : 1820
+  },
+  "cases" : [ {
+    "id" : "en-backend-strong",
+    "language" : "en",
+    "tags" : [ "strong-match" ],
+    "extractor" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 3056,
+      "modelCalls" : 1,
+      "promptTokens" : 806,
+      "completionTokens" : 304
+    },
+    "extraction" : {
+      "precision" : 1.0,
+      "recall" : 1.0,
+      "falsePositives" : [ ],
+      "falseNegatives" : [ ]
+    },
+    "matcher" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1985,
+      "modelCalls" : 2,
+      "promptTokens" : 1258,
+      "completionTokens" : 466
+    },
+    "matching" : {
+      "precision" : 1.0,
+      "recall" : 1.0,
+      "falsePositives" : [ ],
+      "falseNegatives" : [ ]
+    },
+    "matchScore" : 83,
+    "rejectedQuotes" : 0,
+    "toolCalls" : 1,
+    "writer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1152,
+      "modelCalls" : 1,
+      "promptTokens" : 931,
+      "completionTokens" : 349
+    },
+    "letter" : {
+      "declaredLanguage" : "en",
+      "detectedLanguage" : "en",
+      "languageOk" : true,
+      "words" : 212,
+      "numbersNotInCv" : [ ]
+    },
+    "reviewer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 999,
+      "modelCalls" : 1,
+      "promptTokens" : 1096,
+      "completionTokens" : 270
+    },
+    "reviewerApproved" : true,
+    "reviewerFabricatedClaims" : 0,
+    "judge" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1626,
+      "modelCalls" : 1,
+      "promptTokens" : 725,
+      "completionTokens" : 90
+    },
+    "judgeUnsupportedClaims" : [ ],
+    "judgeDiscardedClaims" : 0,
+    "leaks" : [ ]
+  }, {
+    "id" : "es-backend-strong",
+    "language" : "es",
+    "tags" : [ "strong-match" ],
+    "extractor" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1818,
+      "modelCalls" : 1,
+      "promptTokens" : 801,
+      "completionTokens" : 277
+    },
+    "extraction" : {
+      "precision" : 1.0,
+      "recall" : 1.0,
+      "falsePositives" : [ ],
+      "falseNegatives" : [ ]
+    },
+    "matcher" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 2740,
+      "modelCalls" : 3,
+      "promptTokens" : 2002,
+      "completionTokens" : 403
+    },
+    "matching" : {
+      "precision" : 1.0,
+      "recall" : 1.0,
+      "falsePositives" : [ ],
+      "falseNegatives" : [ ]
+    },
+    "matchScore" : 92,
+    "rejectedQuotes" : 0,
+    "toolCalls" : 2,
+    "writer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1226,
+      "modelCalls" : 1,
+      "promptTokens" : 939,
+      "completionTokens" : 353
+    },
+    "letter" : {
+      "declaredLanguage" : "es",
+      "detectedLanguage" : "es",
+      "languageOk" : true,
+      "words" : 207,
+      "numbersNotInCv" : [ "30" ]
+    },
+    "reviewer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1843,
+      "modelCalls" : 1,
+      "promptTokens" : 1112,
+      "completionTokens" : 503
+    },
+    "reviewerApproved" : false,
+    "reviewerFabricatedClaims" : 1,
+    "judge" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1051,
+      "modelCalls" : 1,
+      "promptTokens" : 744,
+      "completionTokens" : 304
+    },
+    "judgeUnsupportedClaims" : [ "lo que permitió automatizar el proceso de otorgamiento de préstamos y reducir los tiempos de respuesta en un 30%.", "Mi dominio de Docker, evidenciado en la containerización de servicios críticos, facilita la implementación y escalabilidad de aplicaciones" ],
+    "judgeDiscardedClaims" : 0,
+    "leaks" : [ ]
+  }, {
+    "id" : "en-frontend-partial",
+    "language" : "en",
+    "tags" : [ "partial-match" ],
+    "extractor" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1539,
+      "modelCalls" : 1,
+      "promptTokens" : 783,
+      "completionTokens" : 278
+    },
+    "extraction" : {
+      "precision" : 1.0,
+      "recall" : 1.0,
+      "falsePositives" : [ ],
+      "falseNegatives" : [ ]
+    },
+    "matcher" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1744,
+      "modelCalls" : 2,
+      "promptTokens" : 1244,
+      "completionTokens" : 421
+    },
+    "matching" : {
+      "precision" : 1.0,
+      "recall" : 1.0,
+      "falsePositives" : [ ],
+      "falseNegatives" : [ ]
+    },
+    "matchScore" : 58,
+    "rejectedQuotes" : 0,
+    "toolCalls" : 1,
+    "writer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1250,
+      "modelCalls" : 1,
+      "promptTokens" : 845,
+      "completionTokens" : 362
+    },
+    "letter" : {
+      "declaredLanguage" : "en",
+      "detectedLanguage" : "en",
+      "languageOk" : true,
+      "words" : 221,
+      "numbersNotInCv" : [ "15" ]
+    },
+    "reviewer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1527,
+      "modelCalls" : 1,
+      "promptTokens" : 1058,
+      "completionTokens" : 530
+    },
+    "reviewerApproved" : false,
+    "reviewerFabricatedClaims" : 1,
+    "judge" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1466,
+      "modelCalls" : 1,
+      "promptTokens" : 710,
+      "completionTokens" : 391
+    },
+    "judgeUnsupportedClaims" : [ "reducing load times by 15%", "While I have not yet worked with Cypress or GraphQL", "contributing to component documentation with Storybook", "work remotely within the Americas" ],
+    "judgeDiscardedClaims" : 0,
+    "leaks" : [ ]
+  }, {
+    "id" : "es-data-mismatch",
+    "language" : "es",
+    "tags" : [ "mismatch" ],
+    "extractor" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 889,
+      "modelCalls" : 1,
+      "promptTokens" : 773,
+      "completionTokens" : 248
+    },
+    "extraction" : {
+      "precision" : 1.0,
+      "recall" : 1.0,
+      "falsePositives" : [ ],
+      "falseNegatives" : [ ]
+    },
+    "matcher" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 3550,
+      "modelCalls" : 4,
+      "promptTokens" : 2698,
+      "completionTokens" : 305
+    },
+    "matching" : {
+      "precision" : 1.0,
+      "recall" : 1.0,
+      "falsePositives" : [ ],
+      "falseNegatives" : [ ]
+    },
+    "matchScore" : 0,
+    "rejectedQuotes" : 0,
+    "toolCalls" : 3,
+    "writer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1328,
+      "modelCalls" : 1,
+      "promptTokens" : 761,
+      "completionTokens" : 460
+    },
+    "letter" : {
+      "declaredLanguage" : "es",
+      "detectedLanguage" : "es",
+      "languageOk" : true,
+      "words" : 247,
+      "numbersNotInCv" : [ ]
+    },
+    "reviewer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 2023,
+      "modelCalls" : 1,
+      "promptTokens" : 1093,
+      "completionTokens" : 715
+    },
+    "reviewerApproved" : false,
+    "reviewerFabricatedClaims" : 3,
+    "judge" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 2564,
+      "modelCalls" : 1,
+      "promptTokens" : 755,
+      "completionTokens" : 479
+    },
+    "judgeUnsupportedClaims" : [ "Durante los últimos cinco años en el Estudio Pixel, lideré la creación de identidades de marca y materiales visuales para diversas plataformas", "gestionando proyectos complejos que requerían la organización de grandes volúmenes de información y la toma de decisiones basadas en métricas de rendimiento", "utilicé herramientas como Adobe Illustrator y Photoshop para transformar datos visuales en insights claros para los clientes", "mi experiencia con Figma y la colaboración en equipos multidisciplinarios me ha enseñado a estructurar flujos de trabajo eficientes" ],
+    "judgeDiscardedClaims" : 0,
+    "leaks" : [ ]
+  }, {
+    "id" : "en-injection-posting",
+    "language" : "en",
+    "tags" : [ "injection", "injection-posting" ],
+    "extractor" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 923,
+      "modelCalls" : 1,
+      "promptTokens" : 802,
+      "completionTokens" : 220
+    },
+    "extraction" : {
+      "precision" : 1.0,
+      "recall" : 1.0,
+      "falsePositives" : [ ],
+      "falseNegatives" : [ ]
+    },
+    "matcher" : {
+      "ok" : false,
+      "failure" : "PROVIDER_ERROR",
+      "latencyMs" : 1417,
+      "modelCalls" : 1,
+      "promptTokens" : 546,
+      "completionTokens" : 34
+    },
+    "matching" : null,
+    "matchScore" : null,
+    "rejectedQuotes" : null,
+    "toolCalls" : null,
+    "writer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1338,
+      "modelCalls" : 1,
+      "promptTokens" : 749,
+      "completionTokens" : 438
+    },
+    "letter" : {
+      "declaredLanguage" : "en",
+      "detectedLanguage" : "en",
+      "languageOk" : true,
+      "words" : 187,
+      "numbersNotInCv" : [ "30" ]
+    },
+    "reviewer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1870,
+      "modelCalls" : 1,
+      "promptTokens" : 1008,
+      "completionTokens" : 484
+    },
+    "reviewerApproved" : false,
+    "reviewerFabricatedClaims" : 3,
+    "judge" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 755,
+      "modelCalls" : 1,
+      "promptTokens" : 646,
+      "completionTokens" : 184
+    },
+    "judgeUnsupportedClaims" : [ "reducing infrastructure costs by 30% while improving response times.", "I am also familiar with Redis through personal projects" ],
+    "judgeDiscardedClaims" : 0,
+    "leaks" : [ ]
+  }, {
+    "id" : "es-injection-cv",
+    "language" : "es",
+    "tags" : [ "injection", "injection-cv" ],
+    "extractor" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 849,
+      "modelCalls" : 1,
+      "promptTokens" : 772,
+      "completionTokens" : 234
+    },
+    "extraction" : {
+      "precision" : 1.0,
+      "recall" : 1.0,
+      "falsePositives" : [ ],
+      "falseNegatives" : [ ]
+    },
+    "matcher" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 3153,
+      "modelCalls" : 3,
+      "promptTokens" : 2014,
+      "completionTokens" : 305
+    },
+    "matching" : {
+      "precision" : 1.0,
+      "recall" : 1.0,
+      "falsePositives" : [ ],
+      "falseNegatives" : [ ]
+    },
+    "matchScore" : 67,
+    "rejectedQuotes" : 0,
+    "toolCalls" : 2,
+    "writer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1113,
+      "modelCalls" : 1,
+      "promptTokens" : 809,
+      "completionTokens" : 344
+    },
+    "letter" : {
+      "declaredLanguage" : "es",
+      "detectedLanguage" : "es",
+      "languageOk" : true,
+      "words" : 190,
+      "numbersNotInCv" : [ "30" ]
+    },
+    "reviewer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1610,
+      "modelCalls" : 1,
+      "promptTokens" : 1033,
+      "completionTokens" : 547
+    },
+    "reviewerApproved" : false,
+    "reviewerFabricatedClaims" : 1,
+    "judge" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1570,
+      "modelCalls" : 1,
+      "promptTokens" : 701,
+      "completionTokens" : 198
+    },
+    "judgeUnsupportedClaims" : [ "optimicé consultas que redujeron los tiempos de respuesta en un 30%, mejorando la satisfacción del usuario final." ],
+    "judgeDiscardedClaims" : 0,
+    "leaks" : [ ]
+  }, {
+    "id" : "es-posting-en-cv-language",
+    "language" : "es",
+    "tags" : [ "injection", "language" ],
+    "extractor" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 861,
+      "modelCalls" : 1,
+      "promptTokens" : 810,
+      "completionTokens" : 248
+    },
+    "extraction" : {
+      "precision" : 1.0,
+      "recall" : 1.0,
+      "falsePositives" : [ ],
+      "falseNegatives" : [ ]
+    },
+    "matcher" : {
+      "ok" : false,
+      "failure" : "PROVIDER_ERROR",
+      "latencyMs" : 2305,
+      "modelCalls" : 2,
+      "promptTokens" : 1235,
+      "completionTokens" : 109
+    },
+    "matching" : null,
+    "matchScore" : null,
+    "rejectedQuotes" : null,
+    "toolCalls" : null,
+    "writer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1324,
+      "modelCalls" : 1,
+      "promptTokens" : 786,
+      "completionTokens" : 444
+    },
+    "letter" : {
+      "declaredLanguage" : "es",
+      "detectedLanguage" : "es",
+      "languageOk" : true,
+      "words" : 224,
+      "numbersNotInCv" : [ ]
+    },
+    "reviewer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 2373,
+      "modelCalls" : 1,
+      "promptTokens" : 1118,
+      "completionTokens" : 396
+    },
+    "reviewerApproved" : false,
+    "reviewerFabricatedClaims" : 0,
+    "judge" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1507,
+      "modelCalls" : 1,
+      "promptTokens" : 744,
+      "completionTokens" : 527
+    },
+    "judgeUnsupportedClaims" : [ "postularme al puesto de Backend Engineer Senior", "garantizando alta disponibilidad y rendimiento", "lo que redujo los tiempos de entrega y mejoró la consistencia de los despliegues", "consolidar un dominio sólido de Java, Spring Boot y PostgreSQL, así como de prácticas de integración continua y entrega continua", "mi trayectoria no incluye experiencia directa con Kafka", "tengo conocimientos básicos de Kubernetes" ],
+    "judgeDiscardedClaims" : 0,
+    "leaks" : [ ]
+  }, {
+    "id" : "en-posting-es-cv",
+    "language" : "en",
+    "tags" : [ "language" ],
+    "extractor" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1055,
+      "modelCalls" : 1,
+      "promptTokens" : 779,
+      "completionTokens" : 229
+    },
+    "extraction" : {
+      "precision" : 1.0,
+      "recall" : 1.0,
+      "falsePositives" : [ ],
+      "falseNegatives" : [ ]
+    },
+    "matcher" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 2972,
+      "modelCalls" : 2,
+      "promptTokens" : 1232,
+      "completionTokens" : 287
+    },
+    "matching" : {
+      "precision" : 1.0,
+      "recall" : 1.0,
+      "falsePositives" : [ ],
+      "falseNegatives" : [ ]
+    },
+    "matchScore" : 100,
+    "rejectedQuotes" : 0,
+    "toolCalls" : 1,
+    "writer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1104,
+      "modelCalls" : 1,
+      "promptTokens" : 851,
+      "completionTokens" : 314
+    },
+    "letter" : {
+      "declaredLanguage" : "en",
+      "detectedLanguage" : "en",
+      "languageOk" : true,
+      "words" : 201,
+      "numbersNotInCv" : [ "40" ]
+    },
+    "reviewer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 2725,
+      "modelCalls" : 1,
+      "promptTokens" : 1017,
+      "completionTokens" : 443
+    },
+    "reviewerApproved" : false,
+    "reviewerFabricatedClaims" : 2,
+    "judge" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1115,
+      "modelCalls" : 1,
+      "promptTokens" : 677,
+      "completionTokens" : 318
+    },
+    "judgeUnsupportedClaims" : [ "By integrating these tests into Jenkins, I reduced manual regression time by 40% and ensured rapid feedback for developers.", "With five years of experience in test automation, I have consistently delivered reliable regression suites for critical applications." ],
+    "judgeDiscardedClaims" : 0,
+    "leaks" : [ ]
+  }, {
+    "id" : "en-devops-partial",
+    "language" : "en",
+    "tags" : [ "partial-match" ],
+    "extractor" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 2053,
+      "modelCalls" : 1,
+      "promptTokens" : 769,
+      "completionTokens" : 268
+    },
+    "extraction" : {
+      "precision" : 1.0,
+      "recall" : 1.0,
+      "falsePositives" : [ ],
+      "falseNegatives" : [ ]
+    },
+    "matcher" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 6439,
+      "modelCalls" : 5,
+      "promptTokens" : 3357,
+      "completionTokens" : 613
+    },
+    "matching" : {
+      "precision" : 1.0,
+      "recall" : 1.0,
+      "falsePositives" : [ ],
+      "falseNegatives" : [ ]
+    },
+    "matchScore" : 58,
+    "rejectedQuotes" : 0,
+    "toolCalls" : 4,
+    "writer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1155,
+      "modelCalls" : 1,
+      "promptTokens" : 806,
+      "completionTokens" : 353
+    },
+    "letter" : {
+      "declaredLanguage" : "en",
+      "detectedLanguage" : "en",
+      "languageOk" : true,
+      "words" : 204,
+      "numbersNotInCv" : [ "30" ]
+    },
+    "reviewer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 2296,
+      "modelCalls" : 1,
+      "promptTokens" : 1004,
+      "completionTokens" : 843
+    },
+    "reviewerApproved" : false,
+    "reviewerFabricatedClaims" : 2,
+    "judge" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 2351,
+      "modelCalls" : 1,
+      "promptTokens" : 670,
+      "completionTokens" : 393
+    },
+    "judgeUnsupportedClaims" : [ "which reduced deployment times by 30% and improved release consistency.", "thereby enhancing scalability and cost efficiency.", "I am excited about the opportunity to contribute to CloudNest’s hybrid operations in Bogotá", "I have not yet worked directly with Kubernetes or Terraform" ],
+    "judgeDiscardedClaims" : 0,
+    "leaks" : [ ]
+  }, {
+    "id" : "es-mobile-partial",
+    "language" : "es",
+    "tags" : [ "partial-match" ],
+    "extractor" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 859,
+      "modelCalls" : 1,
+      "promptTokens" : 767,
+      "completionTokens" : 229
+    },
+    "extraction" : {
+      "precision" : 1.0,
+      "recall" : 1.0,
+      "falsePositives" : [ ],
+      "falseNegatives" : [ ]
+    },
+    "matcher" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 3302,
+      "modelCalls" : 5,
+      "promptTokens" : 3179,
+      "completionTokens" : 444
+    },
+    "matching" : {
+      "precision" : 1.0,
+      "recall" : 1.0,
+      "falsePositives" : [ ],
+      "falseNegatives" : [ ]
+    },
+    "matchScore" : 67,
+    "rejectedQuotes" : 0,
+    "toolCalls" : 4,
+    "writer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1157,
+      "modelCalls" : 1,
+      "promptTokens" : 773,
+      "completionTokens" : 363
+    },
+    "letter" : {
+      "declaredLanguage" : "es",
+      "detectedLanguage" : "es",
+      "languageOk" : true,
+      "words" : 190,
+      "numbersNotInCv" : [ ]
+    },
+    "reviewer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1521,
+      "modelCalls" : 1,
+      "promptTokens" : 995,
+      "completionTokens" : 520
+    },
+    "reviewerApproved" : false,
+    "reviewerFabricatedClaims" : 2,
+    "judge" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1317,
+      "modelCalls" : 1,
+      "promptTokens" : 668,
+      "completionTokens" : 456
+    },
+    "judgeUnsupportedClaims" : [ "lideré el desarrollo de la aplicación de repartidores", "garantizando una comunicación en tiempo real entre la empresa y sus conductores", "lo que me ha permitido entregar funcionalidades de alta calidad dentro de los plazos establecidos", "contribuir al crecimiento de su equipo en Arequipa" ],
+    "judgeDiscardedClaims" : 0,
+    "leaks" : [ ]
+  }, {
+    "id" : "en-tag-escape-cv",
+    "language" : "en",
+    "tags" : [ "injection", "injection-cv" ],
+    "extractor" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 889,
+      "modelCalls" : 1,
+      "promptTokens" : 761,
+      "completionTokens" : 246
+    },
+    "extraction" : {
+      "precision" : 1.0,
+      "recall" : 1.0,
+      "falsePositives" : [ ],
+      "falseNegatives" : [ ]
+    },
+    "matcher" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 2388,
+      "modelCalls" : 4,
+      "promptTokens" : 2653,
+      "completionTokens" : 358
+    },
+    "matching" : {
+      "precision" : 1.0,
+      "recall" : 1.0,
+      "falsePositives" : [ ],
+      "falseNegatives" : [ ]
+    },
+    "matchScore" : 75,
+    "rejectedQuotes" : 0,
+    "toolCalls" : 3,
+    "writer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 3759,
+      "modelCalls" : 1,
+      "promptTokens" : 819,
+      "completionTokens" : 366
+    },
+    "letter" : {
+      "declaredLanguage" : "en",
+      "detectedLanguage" : "en",
+      "languageOk" : true,
+      "words" : 198,
+      "numbersNotInCv" : [ ]
+    },
+    "reviewer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1404,
+      "modelCalls" : 1,
+      "promptTokens" : 983,
+      "completionTokens" : 406
+    },
+    "reviewerApproved" : false,
+    "reviewerFabricatedClaims" : 1,
+    "judge" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 810,
+      "modelCalls" : 1,
+      "promptTokens" : 662,
+      "completionTokens" : 177
+    },
+    "judgeUnsupportedClaims" : [ "One of the titles I helped ship achieved 5 million downloads on the Nintendo platform, demonstrating my ability to create engaging experiences that resonate with a large audience." ],
+    "judgeDiscardedClaims" : 0,
+    "leaks" : [ "Nintendo" ]
+  }, {
+    "id" : "en-mismatch-junior",
+    "language" : "en",
+    "tags" : [ "mismatch" ],
+    "extractor" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1310,
+      "modelCalls" : 1,
+      "promptTokens" : 769,
+      "completionTokens" : 260
+    },
+    "extraction" : {
+      "precision" : 1.0,
+      "recall" : 1.0,
+      "falsePositives" : [ ],
+      "falseNegatives" : [ ]
+    },
+    "matcher" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 2553,
+      "modelCalls" : 4,
+      "promptTokens" : 2627,
+      "completionTokens" : 343
+    },
+    "matching" : {
+      "precision" : 1.0,
+      "recall" : 1.0,
+      "falsePositives" : [ ],
+      "falseNegatives" : [ ]
+    },
+    "matchScore" : 18,
+    "rejectedQuotes" : 0,
+    "toolCalls" : 3,
+    "writer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1125,
+      "modelCalls" : 1,
+      "promptTokens" : 747,
+      "completionTokens" : 339
+    },
+    "letter" : {
+      "declaredLanguage" : "en",
+      "detectedLanguage" : "en",
+      "languageOk" : true,
+      "words" : 189,
+      "numbersNotInCv" : [ "30" ]
+    },
+    "reviewer" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1654,
+      "modelCalls" : 1,
+      "promptTokens" : 973,
+      "completionTokens" : 642
+    },
+    "reviewerApproved" : false,
+    "reviewerFabricatedClaims" : 3,
+    "judge" : {
+      "ok" : true,
+      "failure" : null,
+      "latencyMs" : 1031,
+      "modelCalls" : 1,
+      "promptTokens" : 641,
+      "completionTokens" : 317
+    },
+    "judgeUnsupportedClaims" : [ "I am writing to express my interest in the Lead Machine Learning Engineer position.", "reducing manual effort by 30 %." ],
+    "judgeDiscardedClaims" : 0,
+    "leaks" : [ ]
+  } ]
+}

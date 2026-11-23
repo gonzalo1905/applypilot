@@ -1,12 +1,12 @@
 package com.applypilot.agent.evals;
 
+import com.applypilot.agent.LetterFacts;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -16,9 +16,6 @@ import java.util.regex.Pattern;
 public final class EvalMetrics {
 
 	private static final Pattern NON_SKILL_CHARS = Pattern.compile("[^\\p{L}\\p{N}+#]+");
-
-	/** Numbers as people write them: 7, 35%, 2,000, 4.5. */
-	private static final Pattern NUMBERS = Pattern.compile("\\d+(?:[.,]\\d+)*");
 
 	private EvalMetrics() {
 	}
@@ -75,14 +72,8 @@ public final class EvalMetrics {
 	 * written as words ("six years") are not seen; the judge covers those.
 	 */
 	public static List<String> numbersNotIn(String letter, String cv) {
-		Set<String> cvNumbers = new LinkedHashSet<>(numbers(cv));
-		List<String> unknown = new ArrayList<>();
-		for (String number : numbers(letter)) {
-			if (!cvNumbers.contains(number) && !unknown.contains(number)) {
-				unknown.add(number);
-			}
-		}
-		return unknown;
+		// The same check the Reviewer now runs in production: the evals found the problem.
+		return LetterFacts.numbersNotIn(letter, cv);
 	}
 
 	public static int wordCount(String text) {
@@ -94,16 +85,6 @@ public final class EvalMetrics {
 	public static boolean containsQuote(String text, String quote) {
 		String normalized = normalizeSpaces(quote).replaceAll("^[\"'“”‘’.…\\s]+|[\"'“”‘’.…\\s]+$", "");
 		return !normalized.isEmpty() && normalizeSpaces(text).contains(normalized);
-	}
-
-	private static List<String> numbers(String text) {
-		List<String> found = new ArrayList<>();
-		Matcher matcher = NUMBERS.matcher(text == null ? "" : text);
-		while (matcher.find()) {
-			// "2,000" and "2.000" are the same number; "35%" is "35".
-			found.add(matcher.group().replaceAll("[.,]", ""));
-		}
-		return found;
 	}
 
 	private static Set<String> tokens(String skill) {

@@ -46,6 +46,9 @@ class EvalMetricsTest {
 			.isEmpty();
 		assertThat(EvalMetrics.numbersNotIn("I have 15 years and led a team of 20 at 40%", cv))
 			.containsExactly("15", "20", "40");
+		// A decimal is not merged into a different whole number.
+		assertThat(EvalMetrics.numbersNotIn("4.5 years", "45 users")).containsExactly("4.5");
+		assertThat(EvalMetrics.numbersNotIn("4,5 años", "4.5 years")).isEmpty();
 	}
 
 	@Test

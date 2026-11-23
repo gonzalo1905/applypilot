@@ -68,6 +68,9 @@ import tools.jackson.databind.json.JsonMapper;
 @EnabledIfSystemProperty(named = "evals", matches = "true")
 class AgentEvalsIT {
 
+	/** Same cap as the orchestrator's evaluator-optimizer loop. */
+	private static final int MAX_REVISIONS = Integer.getInteger("evals.revisions", 2);
+
 	@Autowired
 	private ChatCompletionClient realClient;
 
@@ -83,6 +86,7 @@ class AgentEvalsIT {
 		EvalDataset dataset = jsonMapper.readValue(
 				new ClassPathResource("evals/cases.json").getContentAsString(StandardCharsets.UTF_8), EvalDataset.class);
 		List<EvalCase> cases = select(dataset.cases());
+		assertThat(cases).as("cases selected by evals.cases / evals.only").isNotEmpty();
 
 		PacedChatClient client = new PacedChatClient(realClient, Integer.getInteger("evals.tpm", 6000));
 		// The evals are a developer tool: the app's per-user daily limit does not apply.
@@ -158,27 +162,53 @@ class AgentEvalsIT {
 		EvalReport.Letter letter = null;
 		Timed<Review> review = null;
 		Timed<EvalJudge.Verdict> verdict = null;
+		Step writerStep = draft.step();
+		Step reviewerStep = null;
 		if (draft.failure() == null) {
-			String text = draft.value().letter();
-			String detected = PostingLanguage.detect(text);
-			letter = new EvalReport.Letter(draft.value().language(), detected,
-					evalCase.language().equals(draft.value().language()) && evalCase.language().equals(detected),
-					EvalMetrics.wordCount(text), EvalMetrics.numbersNotIn(text, evalCase.cv()));
-			leaks.addAll(EvalMetrics.leaks(text, forbidden));
+			List<String> firstDraftNumbers = EvalMetrics.numbersNotIn(draft.value().letter(), evalCase.cv());
+			leaks.addAll(EvalMetrics.leaks(draft.value().letter(), forbidden));
 
-			// 4. Reviewer and judge on the same draft: does the Reviewer agree with the judge?
-			StepMeter reviewMeter = new StepMeter(userId);
+			// 4. The evaluator-optimizer loop, as in the app: review, revise while not approved.
+			CoverLetterDraft current = draft.value();
 			review = timed(client, () -> agents.reviewer()
-				.review(reviewMeter, forWriter, evalCase.posting(), evalCase.cv(), matchForWriter, draft.value()));
-			StepMeter judgeMeter = new StepMeter(userId);
-			verdict = timed(client, () -> agents.judge().judge(judgeMeter, evalCase.cv(), text));
+				.review(new StepMeter(userId), forWriter, evalCase.posting(), evalCase.cv(), matchForWriter,
+						draft.value()));
+			reviewerStep = review.step();
+			int revisions = 0;
+			while (review.failure() == null && !review.value().approved() && revisions < MAX_REVISIONS) {
+				CoverLetterDraft previous = current;
+				Review feedback = review.value();
+				Timed<CoverLetterDraft> revised = timed(client, () -> agents.writer()
+					.write(new StepMeter(userId), forWriter, evalCase.posting(), evalCase.cv(), matchForWriter,
+							previous, feedback));
+				writerStep = writerStep.plus(revised.step());
+				if (revised.failure() != null) {
+					break;
+				}
+				revisions++;
+				current = revised.value();
+				leaks.addAll(EvalMetrics.leaks(current.letter(), forbidden));
+				CoverLetterDraft toReview = current;
+				review = timed(client, () -> agents.reviewer()
+					.review(new StepMeter(userId), forWriter, evalCase.posting(), evalCase.cv(), matchForWriter,
+							toReview));
+				reviewerStep = reviewerStep.plus(review.step());
+			}
+
+			// 5. The final letter, as the user would get it, is checked by code and by the judge.
+			String text = current.letter();
+			String detected = PostingLanguage.detect(text);
+			letter = new EvalReport.Letter(current.language(), detected,
+					evalCase.language().equals(current.language()) && evalCase.language().equals(detected),
+					EvalMetrics.wordCount(text), EvalMetrics.numbersNotIn(text, evalCase.cv()), firstDraftNumbers,
+					revisions);
+			verdict = timed(client, () -> agents.judge().judge(new StepMeter(userId), evalCase.cv(), text));
 		}
 
 		return new CaseResult(evalCase.id(), evalCase.language(), evalCase.tags(), extractorStep, extractionScore,
 				match.step(), matchScore, match.failure() == null ? match.value().score() : null,
 				match.failure() == null ? match.value().rejectedEvidence() : null,
-				match.failure() == null ? matchMeter.toolCalls() : null, draft.step(), letter,
-				review == null ? null : review.step(),
+				match.failure() == null ? matchMeter.toolCalls() : null, writerStep, letter, reviewerStep,
 				review == null || review.failure() != null ? null : review.value().approved(),
 				review == null || review.failure() != null ? null : review.value().fabricatedClaims().size(),
 				verdict == null ? null : verdict.step(),
@@ -213,8 +243,9 @@ class AgentEvalsIT {
 		catch (ExtractionFailedException ex) {
 			failure = ex.getReason().name();
 		}
-		long latencyMs = (System.nanoTime() - start) / 1_000_000;
 		PacedChatClient.Usage cost = client.usage().minus(before);
+		// Time spent waiting for the tokens-per-minute budget is not the agent's latency.
+		long latencyMs = (System.nanoTime() - start) / 1_000_000 - cost.waitedMs();
 		return new Timed<>(value, failure, new Step(failure == null, failure, latencyMs, cost.calls(),
 				cost.promptTokens(), cost.completionTokens()));
 	}

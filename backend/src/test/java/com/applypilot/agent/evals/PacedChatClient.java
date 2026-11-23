@@ -61,7 +61,7 @@ public final class PacedChatClient implements ChatCompletionClient {
 	}
 
 	public synchronized Usage usage() {
-		return new Usage(calls, promptTokens, completionTokens);
+		return new Usage(calls, promptTokens, completionTokens, waitedMs);
 	}
 
 	public synchronized int rateLimitRetries() {
@@ -73,11 +73,11 @@ public final class PacedChatClient implements ChatCompletionClient {
 	}
 
 	/** Totals so far; the difference of two snapshots is what a step cost. */
-	public record Usage(int calls, long promptTokens, long completionTokens) {
+	public record Usage(int calls, long promptTokens, long completionTokens, long waitedMs) {
 
 		public Usage minus(Usage before) {
 			return new Usage(calls - before.calls, promptTokens - before.promptTokens,
-					completionTokens - before.completionTokens);
+					completionTokens - before.completionTokens, waitedMs - before.waitedMs);
 		}
 
 	}
