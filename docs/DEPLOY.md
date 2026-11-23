@@ -97,7 +97,11 @@ node -e "console.log(require('crypto').randomBytes(48).toString('base64'))"
    command, the output folder and the rewrite for Angular routes.
 3. Under **Environment Variables** add `API_URL` = `https://<your-service>.onrender.com/api`
    (note the `/api`).
-4. **Deploy.** When it finishes, open the URL and click **Try the demo**. The first time,
+4. **Deploy.** Vercel adds a suffix when the name is taken (this deployment got
+   `applypilot-silk.vercel.app`). To choose the name, go to Settings > Domains > Add Domain
+   and add a free `<name>.vercel.app` that is available (the demo uses
+   `applypilot-wga.vercel.app`). Every address the site uses must be listed in
+   `CORS_ALLOWED_ORIGINS`, comma-separated. When it finishes, open the URL and click **Try the demo**. The first time,
    the backend is probably asleep: wait for the notice to disappear.
 5. If the Vercel address differs from the one you entered in step 2, update
    `CORS_ALLOWED_ORIGINS` in Render (Environment > Save, Render restarts by itself).

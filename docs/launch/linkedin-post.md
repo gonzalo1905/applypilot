@@ -1,6 +1,6 @@
 # LinkedIn post: draft (not published)
 
-Replace `<demo link>` with the Vercel URL and attach the screenshots from `docs/screenshots/`.
+Attach the screenshots from `docs/screenshots/`.
 For a carousel, use this order: board, analysis, match, letter.
 
 ---
@@ -35,7 +35,7 @@ demo account, and a "server is waking up" notice for cold starts.
 Stack: Java 21 · Spring Boot 4 · Spring AI · PostgreSQL · Angular 22 · Testcontainers ·
 GitHub Actions · Docker (Render) · Neon · Vercel · Groq
 
-Try it (no sign-up, fictitious data): <demo link>
+Try it (no sign-up, fictitious data): https://applypilot-wga.vercel.app
 Code and a stage-by-stage learning log: https://github.com/gonzalo1905/applypilot
 
 #Java #SpringBoot #Angular #LLM #AIAgents #MCP #SoftwareEngineering
@@ -74,7 +74,7 @@ arranques en frío.
 Stack: Java 21 · Spring Boot 4 · Spring AI · PostgreSQL · Angular 22 · Testcontainers ·
 GitHub Actions · Docker (Render) · Neon · Vercel · Groq
 
-Probalo (sin registro, datos ficticios): <demo link>
+Probalo (sin registro, datos ficticios): https://applypilot-wga.vercel.app
 Código y bitácora de aprendizaje etapa por etapa: https://github.com/gonzalo1905/applypilot
 
 #Java #SpringBoot #Angular #LLM #AIAgents #MCP #DesarrolloDeSoftware

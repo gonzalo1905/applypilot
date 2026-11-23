@@ -5,10 +5,10 @@
 **A job-application tracker with a team of AI agents that matches your CV to each posting
 and drafts a cover letter that only states what your CV can prove.**
 
-**Live demo:** _being deployed; link coming soon_. Click **Try the demo**: no sign-up, all
+**Live demo: [applypilot-wga.vercel.app](https://applypilot-wga.vercel.app)**. Click **Try the demo**: no sign-up, all
 data is fictitious. The free server sleeps when idle, so the first request can take a minute.
 
-![The board of the demo account](docs/screenshots/02-board.png)
+![ApplyPilot flow: board, posting analysis, match score, cover letter, run timeline](docs/screenshots/flow.gif)
 
 ## What it does
 
