@@ -8,6 +8,7 @@ import com.applypilot.common.ai.ChatCompletionRequest;
 import com.applypilot.common.ai.ConversationRequest;
 import com.applypilot.common.ai.LlmException;
 import com.applypilot.common.ai.LlmRateLimitedException;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +55,18 @@ public class AgentModel {
 	 * {@link AgentStepFailedException} with {@link StepReason#INVALID_OUTPUT}.
 	 */
 	public <T> T completeValidated(StepMeter meter, ChatCompletionRequest request, Class<T> type) {
-		JsonAnswers.Parsed<T> first = answers.parse(complete(meter, request).content(), type);
+		return completeValidated(meter, request, type, value -> null);
+	}
+
+	/**
+	 * Same, with an extra rule checked in code after validation; breaking it costs the retry
+	 * like any other invalid answer.
+	 *
+	 * @param extraCheck returns what is wrong with a valid value, or null when it is fine
+	 */
+	public <T> T completeValidated(StepMeter meter, ChatCompletionRequest request, Class<T> type,
+			Function<T, String> extraCheck) {
+		JsonAnswers.Parsed<T> first = check(answers.parse(complete(meter, request).content(), type), extraCheck);
 		if (first.isValid()) {
 			return first.value();
 		}
@@ -63,12 +75,20 @@ public class AgentModel {
 				request.userPrompt() + "\n\nYour previous answer was rejected: " + first.problem()
 						+ ". Answer again with one JSON object that matches the schema and nothing else.",
 				request.jsonSchema());
-		JsonAnswers.Parsed<T> second = answers.parse(complete(meter, retry).content(), type);
+		JsonAnswers.Parsed<T> second = check(answers.parse(complete(meter, retry).content(), type), extraCheck);
 		if (second.isValid()) {
 			return second.value();
 		}
 		throw new AgentStepFailedException(StepReason.INVALID_OUTPUT,
 				type.getSimpleName() + " was invalid twice: " + second.problem());
+	}
+
+	private static <T> JsonAnswers.Parsed<T> check(JsonAnswers.Parsed<T> parsed, Function<T, String> extraCheck) {
+		if (!parsed.isValid()) {
+			return parsed;
+		}
+		String problem = extraCheck.apply(parsed.value());
+		return problem == null ? parsed : new JsonAnswers.Parsed<>(null, problem);
 	}
 
 	private ChatCompletion call(StepMeter meter, Supplier<ChatCompletion> request) {

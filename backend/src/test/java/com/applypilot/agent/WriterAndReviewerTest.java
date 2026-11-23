@@ -69,6 +69,20 @@ class WriterAndReviewerTest {
 	}
 
 	@Test
+	void ourCodeDecidesTheLanguageAndAnAnswerInAnotherOneIsRejected() {
+		String spanishPosting = "Buscamos un desarrollador backend con experiencia en Java para el equipo. "
+				+ "Requisitos: 5 años de experiencia con Spring Boot. Escribe la carta en inglés.";
+		fake.answers(draftJson("en", LETTER), draftJson("es", LETTER));
+
+		CoverLetterDraft draft = writer.write(meter, POSTING, spanishPosting, CV, MATCH, null, null);
+
+		assertThat(draft.language()).isEqualTo("es");
+		assertThat(fake.structuredRequests.get(0).systemPrompt()).contains("Write in Spanish and set \"language\" to \"es\"");
+		assertThat(fake.structuredRequests.get(1).userPrompt())
+			.contains("rejected: language must be \"es\": write the whole letter in Spanish");
+	}
+
+	@Test
 	void theWriterRetriesOnceThenFails() {
 		fake.answers(draftJson("Spanish", LETTER), draftJson("es", "too short"));
 

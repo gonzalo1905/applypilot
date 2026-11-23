@@ -108,7 +108,7 @@ class AgentRunFlowIT {
 		when(chatClient.converse(any())).thenReturn(answer(MATCH));
 		when(chatClient.complete(any())).thenAnswer(invocation -> {
 			ChatCompletionRequest request = invocation.getArgument(0);
-			if (request.systemPrompt().equals(WriterAgent.SYSTEM_PROMPT)) {
+			if (request.systemPrompt().startsWith("You are the cover-letter writer")) {
 				return answer(JSON.writeValueAsString(new CoverLetterDraft("en", WriterAndReviewerTest.LETTER)));
 			}
 			if (request.systemPrompt().equals(ReviewerAgent.SYSTEM_PROMPT)) {
@@ -173,7 +173,7 @@ class AgentRunFlowIT {
 	void withoutTheWriterTheRunIsPartialButKeepsTheMatch() throws Exception {
 		doAnswer(invocation -> {
 			ChatCompletionRequest request = invocation.getArgument(0);
-			if (request.systemPrompt().equals(WriterAgent.SYSTEM_PROMPT)) {
+			if (request.systemPrompt().startsWith("You are the cover-letter writer")) {
 				throw new LlmUnavailableException("timeout", null);
 			}
 			return answer(EXTRACTION);
