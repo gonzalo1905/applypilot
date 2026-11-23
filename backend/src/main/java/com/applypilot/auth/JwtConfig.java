@@ -20,7 +20,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
  * so a symmetric key is enough.
  */
 @Configuration
-@EnableConfigurationProperties(JwtProperties.class)
+@EnableConfigurationProperties({ JwtProperties.class, AccessProperties.class })
 public class JwtConfig {
 
 	static final String ISSUER = "applypilot";

@@ -53,6 +53,10 @@ app:
     # AI calls per user per day, shared by every AI feature: one job posting analysis, or one
     # model call of any agent (Matcher, Writer, Reviewer). Protects the provider's free quota.
     daily-limit: ${AI_DAILY_LIMIT:30}
+  access:
+    registration-enabled: ${APP_REGISTRATION_ENABLED:true}
+    # Creates a demo account with fictitious data at startup (resets it on every start).
+    demo-enabled: ${APP_DEMO_ENABLED:false}
   cv:
     max-size: 5MB
     # Folder for uploaded CVs (git-ignored). Relative paths resolve from the working directory.

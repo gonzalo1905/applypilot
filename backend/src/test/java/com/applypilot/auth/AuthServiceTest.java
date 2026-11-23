@@ -15,10 +15,10 @@ import com.applypilot.common.error.InvalidRequestException;
 import com.applypilot.user.User;
 import com.applypilot.user.UserRepository;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -36,8 +36,12 @@ class AuthServiceTest {
 	@Mock
 	private JwtService jwtService;
 
-	@InjectMocks
 	private AuthService authService;
+
+	@BeforeEach
+	void openAccess() {
+		authService = new AuthService(userRepository, passwordEncoder, jwtService, new AccessProperties(true, true));
+	}
 
 	@Test
 	void registerHashesPasswordNormalizesEmailAndReturnsToken() {
@@ -132,6 +136,29 @@ class AuthServiceTest {
 			.hasMessage("Invalid email or password");
 
 		verify(jwtService, never()).generateToken(any());
+	}
+
+	@Test
+	void registrationCanBeClosed() {
+		AuthService closed = new AuthService(userRepository, passwordEncoder, jwtService,
+				new AccessProperties(false, true));
+
+		assertThatThrownBy(() -> closed.register(new RegisterRequest("ada@example.com", "s3cret-password", "Ada")))
+			.isInstanceOf(AccessDeniedExceptions.RegistrationClosedException.class);
+		verify(userRepository, never()).saveAndFlush(any());
+	}
+
+	@Test
+	void theDemoLoginIssuesATokenForTheDemoAccountOnlyWhenEnabled() {
+		User demo = new User(DemoAccount.EMAIL, "unusable", DemoAccount.FULL_NAME);
+		when(userRepository.findByEmail(DemoAccount.EMAIL)).thenReturn(Optional.of(demo));
+		when(jwtService.generateToken(demo)).thenReturn("demo-token");
+
+		assertThat(authService.loginAsDemo().accessToken()).isEqualTo("demo-token");
+
+		AuthService withoutDemo = new AuthService(userRepository, passwordEncoder, jwtService,
+				new AccessProperties(true, false));
+		assertThatThrownBy(withoutDemo::loginAsDemo).isInstanceOf(AccessDeniedExceptions.DemoUnavailableException.class);
 	}
 
 }

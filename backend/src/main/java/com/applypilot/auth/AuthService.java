@@ -26,14 +26,21 @@ public class AuthService {
 
 	private final JwtService jwtService;
 
-	public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+	private final AccessProperties access;
+
+	public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
+			AccessProperties access) {
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.jwtService = jwtService;
+		this.access = access;
 	}
 
 	@Transactional
 	public AuthResponse register(RegisterRequest request) {
+		if (!access.registrationEnabled()) {
+			throw new AccessDeniedExceptions.RegistrationClosedException();
+		}
 		String email = normalizeEmail(request.email());
 		if (exceedsBcryptLimit(request.password())) {
 			throw new InvalidRequestException("Password must be at most " + BCRYPT_MAX_BYTES + " bytes long");
@@ -60,6 +67,17 @@ public class AuthService {
 					&& passwordEncoder.matches(request.password(), candidate.getPasswordHash()))
 			.orElseThrow(InvalidCredentialsException::new);
 		return toAuthResponse(user);
+	}
+
+	/** Logs into the shared demo account, which has no usable password. */
+	@Transactional(readOnly = true)
+	public AuthResponse loginAsDemo() {
+		if (!access.demoEnabled()) {
+			throw new AccessDeniedExceptions.DemoUnavailableException();
+		}
+		User demo = userRepository.findByEmail(DemoAccount.EMAIL)
+			.orElseThrow(AccessDeniedExceptions.DemoUnavailableException::new);
+		return toAuthResponse(demo);
 	}
 
 	private AuthResponse toAuthResponse(User user) {

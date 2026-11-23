@@ -32,4 +32,10 @@ public class AuthController {
 		return authService.login(request);
 	}
 
+	/** "Try the demo": a token for the shared demo account, when this server has one. */
+	@PostMapping("/demo")
+	public AuthResponse demo() {
+		return authService.loginAsDemo();
+	}
+
 }
