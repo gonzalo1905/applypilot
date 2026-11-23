@@ -1,0 +1,31 @@
+# Render Blueprint for the backend (free plan). In Render: New > Blueprint > pick this repo.
+# Values marked sync: false are asked for in the dashboard and never stored in the repo.
+services:
+  - type: web
+    name: applypilot-api
+    runtime: docker
+    plan: free
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /actuator/health
+    # Deploy only commits whose GitHub checks (the CI workflow) passed.
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: AI_DAILY_LIMIT
+        value: "10"
+      - key: APP_REGISTRATION_ENABLED
+        value: "false"
+      - key: APP_DEMO_ENABLED
+        value: "true"
