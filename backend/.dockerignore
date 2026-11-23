@@ -1,0 +1,8 @@
+# Only the sources and the Maven wrapper go into the build context.
+target/
+storage/
+*.log
+.env
+.env.*
+.idea/
+.vscode/
