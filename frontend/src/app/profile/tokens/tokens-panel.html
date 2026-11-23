@@ -1,0 +1,73 @@
+<section class="panel" aria-labelledby="tokens-title">
+  <div>
+    <h2 id="tokens-title">Connect Claude (MCP)</h2>
+    <p class="muted">
+      Let Claude Desktop or Claude Code read your board and match results. Tokens are read-only:
+      they cannot change anything or use your AI calls.
+    </p>
+  </div>
+
+  @if (errorMessage(); as message) {
+    <p class="alert-error" role="alert">{{ message }}</p>
+  }
+
+  @if (newToken(); as token) {
+    <div class="new-token" role="status">
+      <p><strong>Copy your token now.</strong> It will not be shown again.</p>
+      <code class="secret">{{ token }}</code>
+      <div class="actions">
+        <button class="btn btn-ghost" type="button" (click)="copy()">
+          {{ copied() ? 'Copied' : 'Copy token' }}
+        </button>
+        <button class="btn btn-ghost" type="button" (click)="dismissToken()">Done</button>
+      </div>
+      <p class="muted small">
+        Server URL: <code>{{ mcpUrl }}</code>, header
+        <code>Authorization: Bearer &lt;token&gt;</code>.
+      </p>
+    </div>
+  }
+
+  <form class="create" (submit)="$event.preventDefault(); create()">
+    <label for="token-name">New token name</label>
+    <div class="row">
+      <input
+        id="token-name"
+        type="text"
+        maxlength="60"
+        placeholder="Claude Desktop on my laptop"
+        [value]="name()"
+        (input)="onName($event)"
+      />
+      <button class="btn btn-primary" type="submit" [disabled]="!canCreate()">Create token</button>
+    </div>
+  </form>
+
+  @if (active().length > 0) {
+    <ul class="tokens" aria-label="Active tokens">
+      @for (token of active(); track token.id) {
+        <li>
+          <div>
+            <strong>{{ token.name }}</strong>
+            <span class="muted small">
+              {{ token.prefix }}… · created {{ token.createdAt | date: 'mediumDate' }} ·
+              {{
+                token.lastUsedAt ? 'last used ' + (token.lastUsedAt | date: 'medium') : 'never used'
+              }}
+            </span>
+          </div>
+          <button
+            class="btn btn-danger-ghost"
+            type="button"
+            [disabled]="busy()"
+            (click)="revoke(token)"
+          >
+            Revoke
+          </button>
+        </li>
+      }
+    </ul>
+  } @else {
+    <p class="muted small">No active tokens.</p>
+  }
+</section>

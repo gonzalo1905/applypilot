@@ -5,6 +5,7 @@ import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { User } from '../auth/auth.models';
 import { AuthService } from '../auth/auth.service';
+import { TokensApi } from './tokens/tokens.api';
 import { CvApi, CvMetadata } from './cv.api';
 import { MAX_CV_SIZE_BYTES, Profile } from './profile';
 
@@ -41,6 +42,10 @@ describe('Profile', () => {
         provideRouter([]),
         { provide: AuthService, useValue: { user: signal<User | null>(user), logout: vi.fn() } },
         { provide: CvApi, useValue: cvApi },
+        {
+          provide: TokensApi,
+          useValue: { list: vi.fn(() => of([])), mcpUrl: vi.fn(() => 'http://localhost:8080/mcp') },
+        },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(Profile);

@@ -5,13 +5,14 @@ import { AuthService } from '../auth/auth.service';
 import { toErrorMessage } from '../core/api-error';
 import { Topbar } from '../core/topbar/topbar';
 import { CvApi, CvMetadata } from './cv.api';
+import { TokensPanel } from './tokens/tokens-panel';
 
 /** Must match the backend limit (app.cv.max-size). The backend enforces it; this is fast feedback. */
 export const MAX_CV_SIZE_BYTES = 5 * 1024 * 1024;
 
 @Component({
   selector: 'app-profile',
-  imports: [DatePipe, Topbar],
+  imports: [DatePipe, Topbar, TokensPanel],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
