@@ -1,5 +1,7 @@
 # ApplyPilot
 
+[![CI](https://github.com/gonzalo1905/applypilot/actions/workflows/ci.yml/badge.svg)](https://github.com/gonzalo1905/applypilot/actions/workflows/ci.yml)
+
 ApplyPilot is an AI-assisted job-application tracker. It keeps every application on a
 Kanban board (Saved, Applied, Interview, Offer, Rejected) and, in later stages, uses an
 LLM to help tailor CVs and prepare for interviews.
@@ -104,4 +106,29 @@ cd backend && ./mvnw test       # unit tests only (fast, no Docker)
 cd backend && ./mvnw verify     # unit + integration tests (Docker must be running)
 cd frontend && npm test         # unit tests
 cd frontend && npm run build    # production build
+cd frontend && npm run lint     # ESLint (angular-eslint)
+cd frontend && npm run format:check
 ```
+
+### Continuous integration
+
+Every push and pull request to `main` runs `.github/workflows/ci.yml`: the backend's
+`mvnw verify` (with Testcontainers) and the frontend's lint, formatting check, tests and
+production build. Tests that call the real AI provider never run in CI.
+
+### Agent evals (real model, opt-in)
+
+The evals run the agents on a labelled dataset (`backend/src/test/resources/evals/cases.json`)
+and write a report to `backend/target/evals/`. They spend AI quota, so they only run when
+asked. A full run takes about 15 minutes on Groq's free tier, because it waits to stay under
+the tokens-per-minute limit.
+
+```bash
+cd backend && ./mvnw verify -Devals=true -Dit.test=AgentEvalsIT -Dtest=none -Dsurefire.failIfNoSpecifiedTests=false
+# fewer cases: add -Devals.cases=3, or pick some: -Devals.only=en-backend-strong,es-injection-cv
+```
+
+The latest baseline is in `docs/evals/`. To run the evals on GitHub, add the repository
+secret `GROQ_API_KEY` (Settings > Secrets and variables > Actions > New repository secret),
+then open Actions > "Agent evals" > "Run workflow". The report appears in the run's
+summary and as a downloadable artifact.
