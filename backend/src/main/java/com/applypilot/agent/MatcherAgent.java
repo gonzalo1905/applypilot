@@ -28,8 +28,8 @@ import tools.jackson.databind.json.JsonMapper;
  * {@value #MAX_TOOL_CALLS} tool calls. A call over the budget is not run; the model is told
  * to answer instead.</li>
  * <li><b>Answer.</b> If the model's last message is a valid answer, it is used. Otherwise one
- * structured call (strict JSON schema, no tools) gets the facts collected so far, plus one
- * retry with feedback if needed. Groq does not combine tools and strict schemas in one
+ * structured call (strict JSON schema, no tools) gets the facts collected so far, with one
+ * retry if its answer is invalid. Groq does not combine tools and strict schemas in one
  * request, hence the separate call.</li>
  * <li><b>Verify.</b> {@link MatchScoring} checks every quote against the CV and computes the
  * score in code.</li>
@@ -162,22 +162,9 @@ public class MatcherAgent {
 		String userPrompt = requirements + "\n\nCV lines found:\n"
 				+ UntrustedText.wrap("cv_excerpt", UntrustedText.clean(cvLines)) + "\n\nGive your verdicts.";
 
-		ChatCompletion first = model.complete(meter, new ChatCompletionRequest(ANSWER_PROMPT, userPrompt, schema));
-		Parsed<MatcherAnswer> parsed = answers.parse(first.content(), MatcherAnswer.class);
-		if (parsed.isValid()) {
-			return score(posting, parsed.value(), cvText);
-		}
-		log.warn("Matcher answer rejected, retrying once: {}", parsed.problem());
-		ChatCompletion second = model.complete(meter, new ChatCompletionRequest(ANSWER_PROMPT,
-				userPrompt + "\n\nYour previous answer was rejected: " + parsed.problem()
-						+ ". Answer again with one JSON object that matches the schema and nothing else.",
-				schema));
-		Parsed<MatcherAnswer> retried = answers.parse(second.content(), MatcherAnswer.class);
-		if (retried.isValid()) {
-			return score(posting, retried.value(), cvText);
-		}
-		throw new AgentStepFailedException(StepReason.INVALID_OUTPUT,
-				"The matcher returned invalid output twice: " + retried.problem());
+		MatcherAnswer answer = model.completeValidated(meter,
+				new ChatCompletionRequest(ANSWER_PROMPT, userPrompt, schema), MatcherAnswer.class);
+		return score(posting, answer, cvText);
 	}
 
 	private static MatchResult score(ExtractedPosting posting, MatcherAnswer answer, String cvText) {

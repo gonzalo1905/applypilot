@@ -3,8 +3,6 @@ package com.applypilot.agent;
 import com.applypilot.analysis.ExtractedPosting;
 import com.applypilot.analysis.Seniority;
 import com.applypilot.application.WorkMode;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
 import java.util.List;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -13,9 +11,7 @@ final class AgentTestSupport {
 
 	static final JsonMapper JSON = JsonMapper.builder().build();
 
-	static final Validator VALIDATOR = Validation.buildDefaultValidatorFactory().getValidator();
-
-	static final JsonAnswers ANSWERS = new JsonAnswers(JSON, VALIDATOR);
+	static final JsonAnswers ANSWERS = new JsonAnswers(JSON);
 
 	static final String CV = """
 			Ana Torres - Backend Developer

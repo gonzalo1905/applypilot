@@ -1,6 +1,7 @@
 package com.applypilot.agent;
 
 import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -8,8 +9,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.hibernate.validator.HibernateValidator;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import tools.jackson.core.JacksonException;
@@ -28,9 +31,15 @@ public class JsonAnswers {
 
 	private final Validator validator;
 
-	public JsonAnswers(JsonMapper jsonMapper, Validator validator) {
+	public JsonAnswers(JsonMapper jsonMapper) {
 		this.jsonMapper = jsonMapper;
-		this.validator = validator;
+		// Validation messages go back to the model in the retry prompt, so they are always in
+		// English, whatever the server's locale (on a Spanish machine they would be Spanish).
+		this.validator = Validation.byProvider(HibernateValidator.class)
+			.configure()
+			.defaultLocale(Locale.ENGLISH)
+			.buildValidatorFactory()
+			.getValidator();
 	}
 
 	/** Parses and validates one answer. Never throws: an invalid answer is a normal outcome. */

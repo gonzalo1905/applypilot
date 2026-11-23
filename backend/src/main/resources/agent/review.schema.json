@@ -1,0 +1,39 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["approved", "fabricatedClaims", "missingRequirements", "toneIssues", "suggestions"],
+  "properties": {
+    "approved": {
+      "type": "boolean",
+      "description": "True only if the letter has no unsupported claims and no serious problem."
+    },
+    "fabricatedClaims": {
+      "type": "array",
+      "description": "Statements about the candidate that the CV does not support. Empty if none.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["claim", "reason"],
+        "properties": {
+          "claim": { "type": "string", "description": "The statement, quoted from the letter." },
+          "reason": { "type": "string", "description": "Why the CV does not support it." }
+        }
+      }
+    },
+    "missingRequirements": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Key requirements of the posting that the CV supports but the letter does not address. At most 10."
+    },
+    "toneIssues": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Problems of tone or language: generic, exaggerated, servile, wrong language. At most 5."
+    },
+    "suggestions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Concrete changes for the writer, most important first. At most 5."
+    }
+  }
+}

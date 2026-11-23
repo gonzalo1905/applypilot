@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["language", "letter"],
+  "properties": {
+    "language": {
+      "type": "string",
+      "description": "Two-letter lowercase ISO 639-1 code of the language of the letter, the same as the job posting's (en, es, pt...)."
+    },
+    "letter": {
+      "type": "string",
+      "description": "The cover letter as plain text, 200 to 350 words, paragraphs separated by blank lines."
+    }
+  }
+}

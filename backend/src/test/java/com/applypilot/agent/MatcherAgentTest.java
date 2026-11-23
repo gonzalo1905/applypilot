@@ -39,7 +39,7 @@ class MatcherAgentTest {
 
 	private final AiUsageLimiter limiter = mock(AiUsageLimiter.class);
 
-	private final MatcherAgent matcher = new MatcherAgent(new AgentModel(fake, limiter), ANSWERS, JSON);
+	private final MatcherAgent matcher = new MatcherAgent(new AgentModel(fake, limiter, ANSWERS), ANSWERS, JSON);
 
 	private final StepMeter meter = new StepMeter(USER_ID);
 
@@ -148,7 +148,7 @@ class MatcherAgentTest {
 
 		assertThatThrownBy(() -> matcher.match(meter, POSTING, CV)).isInstanceOf(AgentStepFailedException.class)
 			.satisfies(ex -> assertThat(((AgentStepFailedException) ex).getReason()).isEqualTo(StepReason.INVALID_OUTPUT));
-		assertThat(fake.structuredRequests.get(1).userPrompt()).contains("Your previous answer was rejected: summary");
+		assertThat(fake.structuredRequests.get(1).userPrompt()).contains("Your previous answer was rejected: summary must not be blank");
 	}
 
 	@Test
