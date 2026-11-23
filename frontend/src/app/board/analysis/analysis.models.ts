@@ -29,6 +29,10 @@ export interface JobAnalysis {
   /** True when an earlier AI result for the same text was reused. */
   cached: boolean;
   analyzedAt: string;
+  /** Model calls the stored result cost: 0 for a fallback or a reused result. */
+  modelCalls: number;
+  promptTokens: number | null;
+  completionTokens: number | null;
 }
 
 /** Mirrors the backend limits on the pasted text. */

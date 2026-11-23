@@ -90,6 +90,15 @@ public class JobAnalysis {
 	@Column(name = "analyzed_at", nullable = false)
 	private Instant analyzedAt;
 
+	@Column(name = "model_calls", nullable = false)
+	private int modelCalls;
+
+	@Column(name = "prompt_tokens")
+	private Integer promptTokens;
+
+	@Column(name = "completion_tokens")
+	private Integer completionTokens;
+
 	protected JobAnalysis() {
 		// required by JPA
 	}
@@ -118,6 +127,13 @@ public class JobAnalysis {
 		this.fallbackReason = fallbackReason;
 		this.model = model;
 		this.analyzedAt = analyzedAt;
+	}
+
+	/** What producing the current result cost; zero calls for a fallback or a reused result. */
+	public void recordUsage(int modelCalls, Integer promptTokens, Integer completionTokens) {
+		this.modelCalls = modelCalls;
+		this.promptTokens = promptTokens;
+		this.completionTokens = completionTokens;
 	}
 
 	/** The extracted fields, in the same shape the extractors produce. */
@@ -200,6 +216,18 @@ public class JobAnalysis {
 
 	public Instant getAnalyzedAt() {
 		return analyzedAt;
+	}
+
+	public int getModelCalls() {
+		return modelCalls;
+	}
+
+	public Integer getPromptTokens() {
+		return promptTokens;
+	}
+
+	public Integer getCompletionTokens() {
+		return completionTokens;
 	}
 
 }

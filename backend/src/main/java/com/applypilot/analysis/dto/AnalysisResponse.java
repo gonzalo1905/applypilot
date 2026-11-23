@@ -15,6 +15,9 @@ import java.util.UUID;
  * @param cached true when the analyze request that returned this response reused an earlier
  * model result for the same text instead of calling the model again. It describes that one
  * request, so reading the stored analysis later always returns false
+ * @param modelCalls model calls the stored result cost (0 for a fallback or a reused result)
+ * @param promptTokens tokens sent for it; null when no call reported them
+ * @param completionTokens tokens generated for it; null when no call reported them
  */
 public record AnalysisResponse(
 		UUID id,
@@ -34,7 +37,10 @@ public record AnalysisResponse(
 		FallbackReason fallbackReason,
 		String model,
 		boolean cached,
-		Instant analyzedAt) {
+		Instant analyzedAt,
+		int modelCalls,
+		Integer promptTokens,
+		Integer completionTokens) {
 
 	public static AnalysisResponse from(JobAnalysis analysis, boolean cached) {
 		return new AnalysisResponse(analysis.getId(), analysis.getApplicationId(), analysis.getPostingText(),
@@ -42,7 +48,8 @@ public record AnalysisResponse(
 				List.copyOf(analysis.getRequiredSkills()), List.copyOf(analysis.getNiceToHaveSkills()),
 				analysis.getWorkMode(), analysis.getLocation(), List.copyOf(analysis.getLanguages()),
 				analysis.getSalary(), analysis.getSummary(), analysis.getSource(), analysis.getFallbackReason(),
-				analysis.getModel(), cached, analysis.getAnalyzedAt());
+				analysis.getModel(), cached, analysis.getAnalyzedAt(), analysis.getModelCalls(),
+				analysis.getPromptTokens(), analysis.getCompletionTokens());
 	}
 
 }

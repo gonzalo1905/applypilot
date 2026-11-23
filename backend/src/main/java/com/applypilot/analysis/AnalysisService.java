@@ -102,7 +102,8 @@ public class AnalysisService {
 		});
 		if (cached.isPresent()) {
 			JobAnalysis hit = cached.get();
-			Result reused = new Result(hit.toExtractedPosting(), AnalysisSource.LLM, null, hit.getModel());
+			Result reused = new Result(hit.toExtractedPosting(), AnalysisSource.LLM, null, hit.getModel(), 0, null,
+					null);
 			return store(userId, applicationId, postingText, postingHash, reused, true);
 		}
 
@@ -118,7 +119,8 @@ public class AnalysisService {
 		usageLimiter.acquire(userId);
 		try {
 			Extraction extraction = llmExtractor.extract(postingText);
-			return new Result(extraction.posting(), AnalysisSource.LLM, null, extraction.model());
+			return new Result(extraction.posting(), AnalysisSource.LLM, null, extraction.model(),
+					extraction.modelCalls(), extraction.promptTokens(), extraction.completionTokens());
 		}
 		catch (ExtractionFailedException ex) {
 			log.warn("Job posting extraction fell back to keywords: reason={}", ex.getReason());
@@ -128,7 +130,7 @@ public class AnalysisService {
 
 	private Result fallback(String postingText, FallbackReason reason) {
 		Extraction extraction = keywordExtractor.extract(postingText);
-		return new Result(extraction.posting(), AnalysisSource.FALLBACK, reason, null);
+		return new Result(extraction.posting(), AnalysisSource.FALLBACK, reason, null, 0, null, null);
 	}
 
 	/**
@@ -146,6 +148,7 @@ public class AnalysisService {
 				.orElseGet(() -> new JobAnalysis(applicationId, userId));
 			analysis.replace(postingText, postingHash, result.posting(), result.source(), result.fallbackReason(),
 					result.model(), clock.instant());
+			analysis.recordUsage(result.modelCalls(), result.promptTokens(), result.completionTokens());
 			return AnalysisResponse.from(analyses.save(analysis), cached);
 		});
 	}
@@ -177,8 +180,9 @@ public class AnalysisService {
 		}
 	}
 
+	/** @param modelCalls what producing this result cost now: 0 for a reuse or a fallback */
 	private record Result(ExtractedPosting posting, AnalysisSource source, FallbackReason fallbackReason,
-			String model) {
+			String model, int modelCalls, Integer promptTokens, Integer completionTokens) {
 	}
 
 }

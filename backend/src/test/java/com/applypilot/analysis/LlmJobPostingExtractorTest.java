@@ -10,15 +10,11 @@ import com.applypilot.common.ai.ChatCompletionRequest;
 import com.applypilot.common.ai.ConversationRequest;
 import com.applypilot.common.ai.LlmRateLimitedException;
 import com.applypilot.common.ai.LlmUnavailableException;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.Supplier;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -37,25 +33,9 @@ class LlmJobPostingExtractorTest {
 			 "salary": "USD 4,000 / month", "summary": "Backend role building REST APIs."}
 			""";
 
-	private static jakarta.validation.ValidatorFactory validatorFactory;
-
-	private static Validator validator;
-
 	private final ScriptedClient client = new ScriptedClient();
 
-	private final LlmJobPostingExtractor extractor = new LlmJobPostingExtractor(client, JsonMapper.builder().build(),
-			validator);
-
-	@BeforeAll
-	static void createValidator() {
-		validatorFactory = Validation.buildDefaultValidatorFactory();
-		validator = validatorFactory.getValidator();
-	}
-
-	@AfterAll
-	static void closeValidator() {
-		validatorFactory.close();
-	}
+	private final LlmJobPostingExtractor extractor = new LlmJobPostingExtractor(client, JsonMapper.builder().build());
 
 	@Test
 	void returnsAValidAnswerWithTheModelThatProducedIt() {
@@ -113,6 +93,27 @@ class LlmJobPostingExtractorTest {
 	}
 
 	@Test
+	void reportsTheCostOfBothAttempts() {
+		client.answers("this is not json", VALID_ANSWER);
+
+		JobPostingExtractor.Extraction extraction = extractor.extract("posting");
+
+		assertThat(extraction.modelCalls()).isEqualTo(2);
+		assertThat(extraction.promptTokens()).isEqualTo(1000);
+		assertThat(extraction.completionTokens()).isEqualTo(200);
+	}
+
+	@Test
+	void validationFeedbackToTheModelIsInEnglishWhateverTheServerLocale() {
+		client.answers("{\"seniority\": \"SENIOR\", \"requiredSkills\": [], \"niceToHaveSkills\": [],"
+				+ " \"languages\": [], \"summary\": \"\"}", VALID_ANSWER);
+
+		extractor.extract("posting");
+
+		assertThat(client.requests.get(1).userPrompt()).contains("summary must not be blank");
+	}
+
+	@Test
 	void givesUpWithInvalidOutputAfterTheSecondBadAnswer() {
 		client.answers("{}", "{\"seniority\": \"SENIOR\"}");
 
@@ -133,8 +134,7 @@ class LlmJobPostingExtractorTest {
 		for (String invalid : List.of(unknownSeniority, extraField, missingSummary, tooManySkills, "[]", "null")) {
 			ScriptedClient failing = new ScriptedClient();
 			failing.answers(invalid, invalid);
-			LlmJobPostingExtractor strict = new LlmJobPostingExtractor(failing, JsonMapper.builder().build(),
-					validator);
+			LlmJobPostingExtractor strict = new LlmJobPostingExtractor(failing, JsonMapper.builder().build());
 
 			assertThatThrownBy(() -> strict.extract("posting")).as(invalid)
 				.isInstanceOf(ExtractionFailedException.class);
@@ -150,8 +150,7 @@ class LlmJobPostingExtractorTest {
 
 		ScriptedClient down = new ScriptedClient();
 		down.fails(() -> new LlmUnavailableException("timeout", null));
-		LlmJobPostingExtractor withDownProvider = new LlmJobPostingExtractor(down, JsonMapper.builder().build(),
-				validator);
+		LlmJobPostingExtractor withDownProvider = new LlmJobPostingExtractor(down, JsonMapper.builder().build());
 		assertThatThrownBy(() -> withDownProvider.extract("posting"))
 			.extracting(ex -> ((ExtractionFailedException) ex).getReason())
 			.isEqualTo(FallbackReason.PROVIDER_ERROR);

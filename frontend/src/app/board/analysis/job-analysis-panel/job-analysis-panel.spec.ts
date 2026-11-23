@@ -28,6 +28,9 @@ describe('JobAnalysisPanel', () => {
       model: 'openai/gpt-oss-120b',
       cached: false,
       analyzedAt: '2026-11-20T10:00:00Z',
+      modelCalls: 1,
+      promptTokens: 900,
+      completionTokens: 150,
       ...overrides,
     };
   }

@@ -5,6 +5,7 @@ import com.applypilot.common.ai.ChatCompletionClient;
 import com.applypilot.common.ai.ChatCompletionRequest;
 import com.applypilot.common.ai.LlmException;
 import com.applypilot.common.ai.LlmRateLimitedException;
+import com.applypilot.common.ai.ModelOutputValidation;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import java.io.IOException;
@@ -88,12 +89,13 @@ public class LlmJobPostingExtractor implements JobPostingExtractor {
 
 	private final String schema;
 
-	public LlmJobPostingExtractor(ChatCompletionClient client, JsonMapper jsonMapper, Validator validator) {
+	public LlmJobPostingExtractor(ChatCompletionClient client, JsonMapper jsonMapper) {
 		this.client = client;
 		// Strict parsing: a field we did not ask for means the answer is not the one we wanted.
 		this.reader = jsonMapper.readerFor(ExtractedPosting.class)
 			.with(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-		this.validator = validator;
+		// English messages: they go back to the model in the retry prompt.
+		this.validator = ModelOutputValidation.englishValidator();
 		this.schema = loadSchema();
 	}
 
@@ -104,7 +106,8 @@ public class LlmJobPostingExtractor implements JobPostingExtractor {
 		ChatCompletion first = call(userPrompt);
 		Parsed firstAttempt = parse(first.content());
 		if (firstAttempt.isValid()) {
-			return new Extraction(firstAttempt.posting(), first.model());
+			return new Extraction(firstAttempt.posting(), first.model(), 1, first.promptTokens(),
+					first.completionTokens());
 		}
 
 		// One retry, telling the model what was wrong. More retries rarely help and each one
@@ -114,7 +117,8 @@ public class LlmJobPostingExtractor implements JobPostingExtractor {
 				+ ". Answer again with one JSON object that matches the schema and nothing else.");
 		Parsed secondAttempt = parse(second.content());
 		if (secondAttempt.isValid()) {
-			return new Extraction(secondAttempt.posting(), second.model());
+			return new Extraction(secondAttempt.posting(), second.model(), 2, sum(first.promptTokens(),
+					second.promptTokens()), sum(first.completionTokens(), second.completionTokens()));
 		}
 		throw new ExtractionFailedException(FallbackReason.INVALID_OUTPUT,
 				"The model returned invalid output twice: " + secondAttempt.problem(), null);
@@ -171,6 +175,13 @@ public class LlmJobPostingExtractor implements JobPostingExtractor {
 				.collect(Collectors.joining("; ")));
 		}
 		return Parsed.valid(normalized);
+	}
+
+	private static Integer sum(Integer first, Integer second) {
+		if (first == null) {
+			return second;
+		}
+		return second == null ? first : first + second;
 	}
 
 	/** Some models wrap JSON in a Markdown code block even when told not to. */

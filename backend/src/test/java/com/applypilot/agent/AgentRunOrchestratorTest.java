@@ -216,6 +216,7 @@ class AgentRunOrchestratorTest {
 		Step extractor = steps().get(0);
 		assertThat(extractor.source()).isEqualTo(StepSource.LLM);
 		assertThat(extractor.record().usage().modelCalls()).isEqualTo(1);
+		assertThat(extractor.record().usage().promptTokens()).isEqualTo(800);
 		verify(analysisService, never()).get(any(), any());
 	}
 
@@ -279,7 +280,7 @@ class AgentRunOrchestratorTest {
 				"Acme is hiring a Senior Backend Engineer: Java, Spring Boot, Kafka. Nice to have: Docker.",
 				POSTING.company(), POSTING.roleTitle(), POSTING.seniority(), POSTING.requiredSkills(),
 				POSTING.niceToHaveSkills(), POSTING.workMode(), POSTING.location(), POSTING.languages(), null,
-				POSTING.summary(), AnalysisSource.LLM, null, FakeChatModel.MODEL, false, Instant.now());
+				POSTING.summary(), AnalysisSource.LLM, null, FakeChatModel.MODEL, false, Instant.now(), 1, 800, 200);
 	}
 
 	private record Step(AgentName agent, int attempt, StepSource source, StepRecord record) {

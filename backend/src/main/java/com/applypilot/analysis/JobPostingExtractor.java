@@ -15,8 +15,18 @@ public interface JobPostingExtractor {
 	/**
 	 * @param posting the validated result
 	 * @param model the model that produced it; null for the keyword extractor
+	 * @param modelCalls 1, or 2 when the first answer was rejected; 0 for the keyword extractor
+	 * @param promptTokens total over the calls; null when not reported
+	 * @param completionTokens total over the calls; null when not reported
 	 */
-	record Extraction(ExtractedPosting posting, String model) {
+	record Extraction(ExtractedPosting posting, String model, int modelCalls, Integer promptTokens,
+			Integer completionTokens) {
+
+		/** A result that cost no model call. */
+		public Extraction(ExtractedPosting posting, String model) {
+			this(posting, model, 0, null, null);
+		}
+
 	}
 
 }

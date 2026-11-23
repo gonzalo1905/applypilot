@@ -133,7 +133,7 @@ public class AgentRunOrchestrator {
 		AnalysisResponse analysis;
 		StepSource source;
 		StepReason reason = null;
-		int modelCalls = 0;
+		StepUsage usage = StepUsage.NONE;
 		if (postingText == null) {
 			analysis = analysisService.get(trace.userId(), applicationId);
 			source = StepSource.REUSED;
@@ -145,16 +145,17 @@ public class AgentRunOrchestrator {
 			}
 			else if (analysis.source() == AnalysisSource.LLM) {
 				source = StepSource.LLM;
-				modelCalls = 1;
+				usage = new StepUsage(analysis.model(), analysis.modelCalls(), 0, analysis.promptTokens(),
+						analysis.completionTokens());
 			}
 			else {
 				source = StepSource.FALLBACK;
 				reason = StepReason.valueOf(analysis.fallbackReason().name());
 			}
 		}
-		// The analysis service does not report tokens; it counts as one call of the daily limit.
+		// An analysis counts once against the daily limit, even when its first answer was retried.
 		trace.record(AgentName.EXTRACTOR, 1, source, reason, json.hash(analysis.postingText()), toPosting(analysis),
-				new StepUsage(analysis.model(), modelCalls, 0, null, null), started, start);
+				usage, started, start);
 		return analysis;
 	}
 
