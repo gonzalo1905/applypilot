@@ -1,5 +1,9 @@
 package com.applypilot.common.ai;
 
+import java.util.List;
+import org.springframework.ai.chat.model.Generation;
+import org.springframework.ai.chat.messages.ToolResponseMessage;
+import org.springframework.ai.chat.messages.AssistantMessage;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,6 +39,7 @@ class SpringAiChatCompletionClientTest {
 	void sendsSystemAndUserMessagesWithTheConfiguredModelAndTemperatureZero() {
 		ChatResponse response = mock(ChatResponse.class, RETURNS_DEEP_STUBS);
 		when(response.getResult().getOutput().getText()).thenReturn("{\"ok\": true}");
+		when(response.getResult().getOutput().getToolCalls()).thenReturn(List.of());
 		when(response.getMetadata().getModel()).thenReturn("openai/gpt-oss-120b");
 		when(response.getMetadata().getUsage().getPromptTokens()).thenReturn(812);
 		when(response.getMetadata().getUsage().getCompletionTokens()).thenReturn(143);
@@ -63,6 +68,42 @@ class SpringAiChatCompletionClientTest {
 		assertThatThrownBy(() -> client("gsk_test").complete(new ChatCompletionRequest("s", "u", "{}")))
 			.isInstanceOf(LlmUnavailableException.class)
 			.hasCauseInstanceOf(IllegalStateException.class);
+	}
+
+	@Test
+	void conversationSendsToolsAndReplaysToolCallsAndResultsInOrder() {
+		AssistantMessage modelOutput = AssistantMessage.builder()
+			.content("")
+			.toolCalls(List.of(new AssistantMessage.ToolCall("call_2", "function", "searchCv", "{\"term\":\"Kafka\"}")))
+			.build();
+		when(chatModel.call(any(Prompt.class))).thenReturn(new ChatResponse(List.of(new Generation(modelOutput))));
+
+		ChatCompletion completion = client("gsk_test").converse(new ConversationRequest("system rules",
+				List.of(new ConversationMessage.User("match this"),
+						new ConversationMessage.Assistant(null,
+								List.of(new ToolCall("call_1", "searchCv", "{\"term\":\"Java\"}"))),
+						new ConversationMessage.ToolResult("call_1", "searchCv", "Java 8 years")),
+				List.of(new ToolSpec("searchCv", "Search the CV", "{\"type\":\"object\"}"))));
+
+		assertThat(completion.toolCalls()).containsExactly(new ToolCall("call_2", "searchCv", "{\"term\":\"Kafka\"}"));
+		assertThat(completion.hasToolCalls()).isTrue();
+		ArgumentCaptor<Prompt> sent = ArgumentCaptor.forClass(Prompt.class);
+		verify(chatModel).call(sent.capture());
+		Prompt prompt = sent.getValue();
+		assertThat(prompt.getInstructions()).extracting(message -> message.getMessageType())
+			.containsExactly(MessageType.SYSTEM, MessageType.USER, MessageType.ASSISTANT, MessageType.TOOL);
+		AssistantMessage replayed = (AssistantMessage) prompt.getInstructions().get(2);
+		assertThat(replayed.getToolCalls()).singleElement()
+			.satisfies(call -> assertThat(call.id()).isEqualTo("call_1"));
+		ToolResponseMessage toolResult = (ToolResponseMessage) prompt.getInstructions().get(3);
+		assertThat(toolResult.getResponses()).singleElement()
+			.satisfies(response -> assertThat(response.responseData()).isEqualTo("Java 8 years"));
+		OpenAiChatOptions options = (OpenAiChatOptions) prompt.getOptions();
+		assertThat(options.getToolCallbacks()).singleElement()
+			.satisfies(tool -> assertThat(tool.getToolDefinition().name()).isEqualTo("searchCv"));
+		// The definition is only described to the model; running it here would skip our checks.
+		assertThatThrownBy(() -> options.getToolCallbacks().get(0).call("{}"))
+			.isInstanceOf(UnsupportedOperationException.class);
 	}
 
 	private SpringAiChatCompletionClient client(String apiKey) {

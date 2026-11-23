@@ -7,6 +7,7 @@ import com.applypilot.application.WorkMode;
 import com.applypilot.common.ai.ChatCompletion;
 import com.applypilot.common.ai.ChatCompletionClient;
 import com.applypilot.common.ai.ChatCompletionRequest;
+import com.applypilot.common.ai.ConversationRequest;
 import com.applypilot.common.ai.LlmRateLimitedException;
 import com.applypilot.common.ai.LlmUnavailableException;
 import jakarta.validation.Validation;
@@ -272,6 +273,11 @@ class LlmJobPostingExtractorTest {
 				throw new AssertionError("The extractor called the model more times than expected");
 			}
 			return script.poll().get();
+		}
+
+		@Override
+		public ChatCompletion converse(ConversationRequest request) {
+			throw new AssertionError("The extractor has no tools and never holds a conversation");
 		}
 
 	}

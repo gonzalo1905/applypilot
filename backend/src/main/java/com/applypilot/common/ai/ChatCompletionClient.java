@@ -21,4 +21,14 @@ public interface ChatCompletionClient {
 	 */
 	ChatCompletion complete(ChatCompletionRequest request);
 
+	/**
+	 * Sends a multi-turn conversation in which the model may ask for tools. Tool calls come
+	 * back in {@link ChatCompletion#toolCalls()}; running them, and sending the results back
+	 * in a next call, is the caller's job. No structured output in this mode.
+	 *
+	 * @throws LlmRateLimitedException if the provider answered 429 (quota or rate limit)
+	 * @throws LlmUnavailableException for any other failure: timeout, network, provider error
+	 */
+	ChatCompletion converse(ConversationRequest request);
+
 }
