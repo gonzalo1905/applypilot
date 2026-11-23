@@ -53,7 +53,9 @@ describe('JobAnalysisPanel', () => {
 
   function chips(label: string): string[] {
     const list = page.querySelector(`ul[aria-label="${label}"]`);
-    return Array.from(list?.querySelectorAll('li') ?? []).map((chip) => chip.textContent?.trim() ?? '');
+    return Array.from(list?.querySelectorAll('li') ?? []).map(
+      (chip) => chip.textContent?.trim() ?? '',
+    );
   }
 
   function button(label: string): HTMLButtonElement {
@@ -121,16 +123,18 @@ describe('JobAnalysisPanel', () => {
 
     expect(page.querySelector('.badge-fallback')?.textContent?.trim()).toBe('FALLBACK');
     expect(page.querySelector('.badge-ai')).toBeNull();
-    expect(page.querySelector('.fallback-note')?.textContent).toContain('AI is not configured on this server');
+    expect(page.querySelector('.fallback-note')?.textContent).toContain(
+      'AI is not configured on this server',
+    );
     expect(page.querySelector('ul[aria-label="Nice-to-have skills"]')).toBeNull();
   });
 
   it('labels a reused result as cached', async () => {
     await render(of(analysis({ cached: true })));
 
-    expect(Array.from(page.querySelectorAll('.badge')).map((badge) => badge.textContent?.trim())).toContain(
-      'Cached',
-    );
+    expect(
+      Array.from(page.querySelectorAll('.badge')).map((badge) => badge.textContent?.trim()),
+    ).toContain('Cached');
   });
 
   it('shows the daily limit message and keeps the pasted text', async () => {

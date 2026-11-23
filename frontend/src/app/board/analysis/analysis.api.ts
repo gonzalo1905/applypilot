@@ -12,15 +12,17 @@ export class AnalysisApi {
 
   /** The application's analysis, or null when it has none yet (the API answers 404). */
   get(applicationId: string): Observable<JobAnalysis | null> {
-    return this.http.get<JobAnalysis>(this.url(applicationId)).pipe(
-      catchError((error: unknown) =>
-        error instanceof HttpErrorResponse &&
-        error.status === 404 &&
-        error.error?.code === 'ANALYSIS_NOT_FOUND'
-          ? of(null)
-          : throwError(() => error),
-      ),
-    );
+    return this.http
+      .get<JobAnalysis>(this.url(applicationId))
+      .pipe(
+        catchError((error: unknown) =>
+          error instanceof HttpErrorResponse &&
+          error.status === 404 &&
+          error.error?.code === 'ANALYSIS_NOT_FOUND'
+            ? of(null)
+            : throwError(() => error),
+        ),
+      );
   }
 
   /** Analyzes the posting and stores the result, replacing any earlier analysis. */

@@ -27,7 +27,11 @@
     } @else {
       <section class="board" aria-label="Applications board" cdkDropListGroup>
         @for (column of store.columns(); track column.status) {
-          <article class="column" [attr.data-status]="column.status" [attr.aria-label]="column.title">
+          <article
+            class="column"
+            [attr.data-status]="column.status"
+            [attr.aria-label]="column.title"
+          >
             <header class="column-header">
               <span class="status-dot" aria-hidden="true"></span>
               <h2>{{ column.title }}</h2>

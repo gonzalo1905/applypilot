@@ -12,15 +12,17 @@ export class MatchApi {
 
   /** The application's latest run, or null when it has none yet (the API answers 404). */
   latest(applicationId: string): Observable<AgentRun | null> {
-    return this.http.get<AgentRun>(`${this.url(applicationId)}/latest`).pipe(
-      catchError((error: unknown) =>
-        error instanceof HttpErrorResponse &&
-        error.status === 404 &&
-        error.error?.code === 'AGENT_RUN_NOT_FOUND'
-          ? of(null)
-          : throwError(() => error),
-      ),
-    );
+    return this.http
+      .get<AgentRun>(`${this.url(applicationId)}/latest`)
+      .pipe(
+        catchError((error: unknown) =>
+          error instanceof HttpErrorResponse &&
+          error.status === 404 &&
+          error.error?.code === 'AGENT_RUN_NOT_FOUND'
+            ? of(null)
+            : throwError(() => error),
+        ),
+      );
   }
 
   /** Queues a run that reuses the stored analysis; answers right away (202). */

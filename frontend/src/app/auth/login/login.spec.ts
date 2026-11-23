@@ -28,7 +28,9 @@ describe('Login', () => {
         { provide: AuthService, useValue: auth },
         {
           provide: ActivatedRoute,
-          useValue: { snapshot: { queryParamMap: convertToParamMap(returnUrl ? { returnUrl } : {}) } },
+          useValue: {
+            snapshot: { queryParamMap: convertToParamMap(returnUrl ? { returnUrl } : {}) },
+          },
         },
       ],
     }).compileComponents();
@@ -55,7 +57,9 @@ describe('Login', () => {
     await submit();
 
     expect(auth.login).not.toHaveBeenCalled();
-    const errors = Array.from(page.querySelectorAll('.field-error')).map((e) => e.textContent?.trim());
+    const errors = Array.from(page.querySelectorAll('.field-error')).map((e) =>
+      e.textContent?.trim(),
+    );
     expect(errors).toEqual(['Enter a valid email address.', 'Enter your password.']);
   });
 
@@ -77,7 +81,10 @@ describe('Login', () => {
 
     await submit();
 
-    expect(auth.login).toHaveBeenCalledWith({ email: 'ada@example.com', password: 's3cret-password' });
+    expect(auth.login).toHaveBeenCalledWith({
+      email: 'ada@example.com',
+      password: 's3cret-password',
+    });
     expect(navigateByUrl).toHaveBeenCalledWith('/board');
   });
 
@@ -111,7 +118,11 @@ describe('Login', () => {
         () =>
           new HttpErrorResponse({
             status: 401,
-            error: { code: 'INVALID_CREDENTIALS', message: 'Invalid email or password', fieldErrors: [] },
+            error: {
+              code: 'INVALID_CREDENTIALS',
+              message: 'Invalid email or password',
+              fieldErrors: [],
+            },
           }),
       ),
     );

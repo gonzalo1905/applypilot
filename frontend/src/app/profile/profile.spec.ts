@@ -145,7 +145,11 @@ describe('Profile', () => {
         () =>
           new HttpErrorResponse({
             status: 400,
-            error: { code: 'INVALID_REQUEST', message: 'The file is not a readable PDF', fieldErrors: [] },
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'The file is not a readable PDF',
+              fieldErrors: [],
+            },
           }),
       ),
     );
@@ -153,7 +157,9 @@ describe('Profile', () => {
 
     await chooseFile(pdf());
 
-    expect(page.querySelector('[role="alert"]')?.textContent).toBe('The file is not a readable PDF');
+    expect(page.querySelector('[role="alert"]')?.textContent).toBe(
+      'The file is not a readable PDF',
+    );
     expect(page.querySelector('.file-name')).toBeNull();
   });
 

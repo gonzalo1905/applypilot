@@ -31,11 +31,19 @@
 
       @if (current.match; as match) {
         <div class="score-row">
-          <svg class="gauge gauge-{{ scoreLevel() }}" viewBox="0 0 120 70" role="img"
-               [attr.aria-label]="'Match score ' + match.score + ' out of 100'">
+          <svg
+            class="gauge gauge-{{ scoreLevel() }}"
+            viewBox="0 0 120 70"
+            role="img"
+            [attr.aria-label]="'Match score ' + match.score + ' out of 100'"
+          >
             <path class="gauge-track" d="M 10 60 A 50 50 0 0 1 110 60" pathLength="100" />
-            <path class="gauge-value" d="M 10 60 A 50 50 0 0 1 110 60" pathLength="100"
-                  [attr.stroke-dasharray]="gaugeDash(match.score)" />
+            <path
+              class="gauge-value"
+              d="M 10 60 A 50 50 0 0 1 110 60"
+              pathLength="100"
+              [attr.stroke-dasharray]="gaugeDash(match.score)"
+            />
             <text x="60" y="56" text-anchor="middle" class="gauge-number">{{ match.score }}</text>
           </svg>
           <p class="summary">{{ match.summary }}</p>
@@ -46,7 +54,9 @@
           <ul class="evidence" aria-label="Matched skills">
             @for (skill of match.matchedSkills; track skill.skill) {
               <li>
-                <span class="chip chip-matched" [class.chip-required]="skill.required">{{ skill.skill }}</span>
+                <span class="chip chip-matched" [class.chip-required]="skill.required">{{
+                  skill.skill
+                }}</span>
                 <q class="quote">{{ skill.evidence }}</q>
               </li>
             }
@@ -59,25 +69,38 @@
           <h4>Missing skills</h4>
           <ul class="chips" aria-label="Missing skills">
             @for (skill of match.missingSkills; track skill.skill) {
-              <li class="chip chip-missing" [class.chip-required]="skill.required"
-                  [title]="skill.required ? 'Required' : 'Nice to have'">{{ skill.skill }}</li>
+              <li
+                class="chip chip-missing"
+                [class.chip-required]="skill.required"
+                [title]="skill.required ? 'Required' : 'Nice to have'"
+              >
+                {{ skill.skill }}
+              </li>
             }
           </ul>
         }
         @if (match.rejectedEvidence > 0) {
           <p class="note">
-            {{ match.rejectedEvidence }} AI match(es) were discarded because their quote was not found in your CV.
+            {{ match.rejectedEvidence }} AI match(es) were discarded because their quote was not
+            found in your CV.
           </p>
         }
       }
 
       @if (current.status === 'PARTIAL') {
-        <p class="note">The match is ready, but no cover letter could be written: {{ writerReason() }}.</p>
+        <p class="note">
+          The match is ready, but no cover letter could be written: {{ writerReason() }}.
+        </p>
       }
 
       @if (current.coverLetter; as letter) {
         <div class="letter-header">
-          <h4>Cover letter @if (current.letterLanguage) { <span class="lang">({{ current.letterLanguage }})</span> }</h4>
+          <h4>
+            Cover letter
+            @if (current.letterLanguage) {
+              <span class="lang">({{ current.letterLanguage }})</span>
+            }
+          </h4>
           <button class="btn btn-ghost btn-small" type="button" (click)="copyLetter()">
             {{ copied() ? 'Copied' : 'Copy' }}
           </button>
@@ -105,13 +128,17 @@
             <p class="review-label">Claims not supported by your CV</p>
             <ul class="notes notes-danger">
               @for (item of review.fabricatedClaims; track $index) {
-                <li><q>{{ item.claim }}</q>: {{ item.reason }}</li>
+                <li>
+                  <q>{{ item.claim }}</q>: {{ item.reason }}
+                </li>
               }
             </ul>
           }
           @if (review.lengthIssue) {
             <p class="review-label">Length</p>
-            <ul class="notes"><li>{{ review.lengthIssue }}</li></ul>
+            <ul class="notes">
+              <li>{{ review.lengthIssue }}</li>
+            </ul>
           }
           @if (review.missingRequirements.length > 0) {
             <p class="review-label">Requirements to address</p>
@@ -147,13 +174,20 @@
             @for (step of current.steps; track step.order) {
               <li class="step step-{{ step.source.toLowerCase() }}">
                 <span class="step-name">
-                  {{ agentLabels[step.agent] }}@if (step.attempt > 1) { #{{ step.attempt }} }
+                  {{ agentLabels[step.agent] }}
+                  @if (step.attempt > 1) {
+                    #{{ step.attempt }}
+                  }
                 </span>
                 <span class="badge">{{ sourceLabels[step.source] }}</span>
                 <span class="step-meta">
                   {{ seconds(step.latencyMs) }}
-                  @if (step.modelCalls > 0) { · {{ step.modelCalls }} AI call(s) }
-                  @if (step.toolCalls > 0) { · {{ step.toolCalls }} tool call(s) }
+                  @if (step.modelCalls > 0) {
+                    · {{ step.modelCalls }} AI call(s)
+                  }
+                  @if (step.toolCalls > 0) {
+                    · {{ step.toolCalls }} tool call(s)
+                  }
                   @if (step.promptTokens !== null) {
                     · {{ step.promptTokens + (step.completionTokens ?? 0) }} tokens
                   }
@@ -168,13 +202,18 @@
       }
     } @else {
       <p class="muted">
-        Compare this posting with your CV and draft a cover letter. Analyze the posting above and upload
-        your CV in your profile first.
+        Compare this posting with your CV and draft a cover letter. Analyze the posting above and
+        upload your CV in your profile first.
       </p>
     }
 
     <div class="actions">
-      <button class="btn btn-primary" type="button" [disabled]="starting() || active()" (click)="start()">
+      <button
+        class="btn btn-primary"
+        type="button"
+        [disabled]="starting() || active()"
+        (click)="start()"
+      >
         @if (starting()) {
           Starting…
         } @else if (run() === null) {

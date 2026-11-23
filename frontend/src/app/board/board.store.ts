@@ -53,7 +53,9 @@ export class BoardStore {
   }
 
   create(request: CreateApplicationRequest): Observable<JobApplication> {
-    return this.api.create(request).pipe(tap((created) => this.cards.update((cards) => [...cards, created])));
+    return this.api
+      .create(request)
+      .pipe(tap((created) => this.cards.update((cards) => [...cards, created])));
   }
 
   update(id: string, details: ApplicationDetails): Observable<JobApplication> {

@@ -58,7 +58,14 @@ describe('MatchPanel', () => {
       },
       revisions: 1,
       steps: [
-        step({ order: 1, agent: 'EXTRACTOR', source: 'REUSED', modelCalls: 0, toolCalls: 0, promptTokens: null }),
+        step({
+          order: 1,
+          agent: 'EXTRACTOR',
+          source: 'REUSED',
+          modelCalls: 0,
+          toolCalls: 0,
+          promptTokens: null,
+        }),
         step({ order: 2 }),
         step({ order: 3, agent: 'WRITER', toolCalls: 0 }),
         step({ order: 4, agent: 'REVIEWER', toolCalls: 0 }),
@@ -120,12 +127,16 @@ describe('MatchPanel', () => {
   it('shows the score, the skills with their evidence, the letter, the review and the timeline', async () => {
     await render(of(run()));
 
-    expect(page.querySelector('svg.gauge')?.getAttribute('aria-label')).toBe('Match score 71 out of 100');
+    expect(page.querySelector('svg.gauge')?.getAttribute('aria-label')).toBe(
+      'Match score 71 out of 100',
+    );
     expect(page.querySelector('svg.gauge')?.classList).toContain('gauge-high');
-    const matched = Array.from(page.querySelectorAll('ul[aria-label="Matched skills"] li')).map((item) => [
-      item.querySelector('.chip')?.textContent?.trim(),
-      item.querySelector('q')?.textContent?.trim(),
-    ]);
+    const matched = Array.from(page.querySelectorAll('ul[aria-label="Matched skills"] li')).map(
+      (item) => [
+        item.querySelector('.chip')?.textContent?.trim(),
+        item.querySelector('q')?.textContent?.trim(),
+      ],
+    );
     expect(matched).toEqual([
       ['Java', '6 years of Java experience'],
       ['Docker', 'Docker on AWS'],
@@ -134,12 +145,19 @@ describe('MatchPanel', () => {
     expect(page.querySelector('pre.letter')?.textContent).toBe(LETTER);
     expect(text('.review')).toContain('Approved');
     expect(text('.review')).toContain('230 words · 1 revision(s)');
-    const steps = Array.from(page.querySelectorAll('ol[aria-label="Run timeline"] li')).map((item) =>
-      Array.from(item.querySelectorAll('span')).map((part) => part.textContent?.replace(/\s+/g, ' ').trim()),
+    const steps = Array.from(page.querySelectorAll('ol[aria-label="Run timeline"] li')).map(
+      (item) =>
+        Array.from(item.querySelectorAll('span')).map((part) =>
+          part.textContent?.replace(/\s+/g, ' ').trim(),
+        ),
     );
     expect(steps).toHaveLength(4);
     expect(steps[0]).toEqual(['Extractor', 'Reused', '2.4 s']);
-    expect(steps[1]).toEqual(['Matcher', 'AI', '2.4 s · 2 AI call(s) · 3 tool call(s) · 1000 tokens']);
+    expect(steps[1]).toEqual([
+      'Matcher',
+      'AI',
+      '2.4 s · 2 AI call(s) · 3 tool call(s) · 1000 tokens',
+    ]);
     expect(button('Run again').disabled).toBe(false);
   });
 
@@ -203,7 +221,9 @@ describe('MatchPanel', () => {
   });
 
   it('shows why a run failed', async () => {
-    await render(of(run({ status: 'FAILED', errorCode: 'INTERRUPTED', match: null, coverLetter: null })));
+    await render(
+      of(run({ status: 'FAILED', errorCode: 'INTERRUPTED', match: null, coverLetter: null })),
+    );
 
     expect(text('[role="alert"]')).toContain('The server restarted');
   });
@@ -211,7 +231,9 @@ describe('MatchPanel', () => {
   it('starts a run and polls until it ends', async () => {
     vi.useFakeTimers();
     await render(of(null));
-    api.start.mockReturnValue(of(run({ status: 'PENDING', match: null, coverLetter: null, review: null, steps: [] })));
+    api.start.mockReturnValue(
+      of(run({ status: 'PENDING', match: null, coverLetter: null, review: null, steps: [] })),
+    );
     api.latest.mockReturnValueOnce(
       of(run({ status: 'RUNNING', currentAgent: 'WRITER', coverLetter: null, review: null })),
     );

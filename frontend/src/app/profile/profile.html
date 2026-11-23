@@ -38,15 +38,16 @@
           <div class="file-info">
             <p class="file-name">{{ current.fileName }}</p>
             <p class="muted">
-              {{ formatSize(current.sizeBytes) }} · uploaded {{ current.uploadedAt | date: 'medium' }}
+              {{ formatSize(current.sizeBytes) }} · uploaded
+              {{ current.uploadedAt | date: 'medium' }}
             </p>
           </div>
         </div>
 
         @if (!current.textExtracted) {
           <p class="alert-warning" role="status">
-            No text could be read from this PDF. It looks like a scan; upload a text-based PDF so the
-            AI assistant can use it.
+            No text could be read from this PDF. It looks like a scan; upload a text-based PDF so
+            the AI assistant can use it.
           </p>
         }
       } @else {
@@ -73,7 +74,12 @@
             <button class="btn btn-ghost" type="button" [disabled]="busy()" (click)="download()">
               Download
             </button>
-            <button class="btn btn-danger-ghost" type="button" [disabled]="busy()" (click)="askToDelete()">
+            <button
+              class="btn btn-danger-ghost"
+              type="button"
+              [disabled]="busy()"
+              (click)="askToDelete()"
+            >
               Delete
             </button>
           }

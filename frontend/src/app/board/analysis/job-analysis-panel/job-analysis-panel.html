@@ -34,12 +34,19 @@
         {{ postingText().length.toLocaleString('en-US') }} / {{ maxLength.toLocaleString('en-US') }}
       </span>
       @if (tooLong()) {
-        <span class="field-error">The posting is too long. Keep the relevant part (up to 20,000 characters).</span>
+        <span class="field-error"
+          >The posting is too long. Keep the relevant part (up to 20,000 characters).</span
+        >
       }
     </div>
     <div class="actions">
       @if (analysis() !== null) {
-        <button class="btn btn-ghost" type="button" [disabled]="analyzing()" (click)="cancelEditing()">
+        <button
+          class="btn btn-ghost"
+          type="button"
+          [disabled]="analyzing()"
+          (click)="cancelEditing()"
+        >
           Cancel
         </button>
       }
@@ -50,30 +57,52 @@
   } @else if (analysis(); as result) {
     @if (result.source === 'FALLBACK') {
       <p class="fallback-note">
-        Keyword-based result: {{ result.fallbackReason ? fallbackLabels[result.fallbackReason] : 'AI unavailable' }}.
-        Only skills from a built-in list were detected.
+        Keyword-based result:
+        {{ result.fallbackReason ? fallbackLabels[result.fallbackReason] : 'AI unavailable' }}. Only
+        skills from a built-in list were detected.
       </p>
     }
 
     <dl class="facts">
       @if (result.roleTitle) {
-        <div><dt>Role</dt><dd>{{ result.roleTitle }}</dd></div>
+        <div>
+          <dt>Role</dt>
+          <dd>{{ result.roleTitle }}</dd>
+        </div>
       }
       @if (result.company) {
-        <div><dt>Company</dt><dd>{{ result.company }}</dd></div>
+        <div>
+          <dt>Company</dt>
+          <dd>{{ result.company }}</dd>
+        </div>
       }
-      <div><dt>Seniority</dt><dd>{{ seniorityLabels[result.seniority] }}</dd></div>
+      <div>
+        <dt>Seniority</dt>
+        <dd>{{ seniorityLabels[result.seniority] }}</dd>
+      </div>
       @if (result.workMode) {
-        <div><dt>Work mode</dt><dd>{{ workModeLabels[result.workMode] }}</dd></div>
+        <div>
+          <dt>Work mode</dt>
+          <dd>{{ workModeLabels[result.workMode] }}</dd>
+        </div>
       }
       @if (result.location) {
-        <div><dt>Location</dt><dd>{{ result.location }}</dd></div>
+        <div>
+          <dt>Location</dt>
+          <dd>{{ result.location }}</dd>
+        </div>
       }
       @if (result.salary) {
-        <div><dt>Salary</dt><dd>{{ result.salary }}</dd></div>
+        <div>
+          <dt>Salary</dt>
+          <dd>{{ result.salary }}</dd>
+        </div>
       }
       @if (result.languages.length > 0) {
-        <div><dt>Languages</dt><dd>{{ result.languages.join(', ') }}</dd></div>
+        <div>
+          <dt>Languages</dt>
+          <dd>{{ result.languages.join(', ') }}</dd>
+        </div>
       }
     </dl>
 

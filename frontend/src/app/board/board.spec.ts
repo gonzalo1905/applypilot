@@ -27,7 +27,11 @@ describe('Board', () => {
   const globex = card('globex', 'SAVED', 1, { company: 'Globex' });
   const initech = card('initech', 'APPLIED', 0, { company: 'Initech', appliedAt: '2026-11-02' });
 
-  let auth: { user: ReturnType<typeof signal<User | null>>; refreshUser: ReturnType<typeof vi.fn>; logout: ReturnType<typeof vi.fn> };
+  let auth: {
+    user: ReturnType<typeof signal<User | null>>;
+    refreshUser: ReturnType<typeof vi.fn>;
+    logout: ReturnType<typeof vi.fn>;
+  };
   let api: { list: ReturnType<typeof vi.fn>; move: ReturnType<typeof vi.fn> };
   let fixture: ComponentFixture<Board>;
   let page: HTMLElement;
@@ -48,7 +52,9 @@ describe('Board', () => {
 
   function columnCards(status: ApplicationStatus): string[] {
     const column = page.querySelector(`.column[data-status="${status}"]`)!;
-    return Array.from(column.querySelectorAll('.card h3')).map((heading) => heading.textContent ?? '');
+    return Array.from(column.querySelectorAll('.card h3')).map(
+      (heading) => heading.textContent ?? '',
+    );
   }
 
   beforeEach(() => {
@@ -124,7 +130,9 @@ describe('Board', () => {
       item: { data: acme },
     } as unknown as CdkDragDrop<ApplicationStatus, ApplicationStatus, JobApplication>;
 
-    (fixture.componentInstance as unknown as { drop: (event: typeof dropEvent) => void }).drop(dropEvent);
+    (fixture.componentInstance as unknown as { drop: (event: typeof dropEvent) => void }).drop(
+      dropEvent,
+    );
     await fixture.whenStable();
 
     expect(api.move).toHaveBeenCalledWith('acme', { status: 'APPLIED', position: 1 });
@@ -141,7 +149,9 @@ describe('Board', () => {
       item: { data: globex },
     } as unknown as CdkDragDrop<ApplicationStatus, ApplicationStatus, JobApplication>;
 
-    (fixture.componentInstance as unknown as { drop: (event: typeof dropEvent) => void }).drop(dropEvent);
+    (fixture.componentInstance as unknown as { drop: (event: typeof dropEvent) => void }).drop(
+      dropEvent,
+    );
 
     expect(api.move).not.toHaveBeenCalled();
   });
@@ -152,15 +162,23 @@ describe('Board', () => {
 
     page.querySelector<HTMLButtonElement>('.board-heading button')?.click();
     await fixture.whenStable();
-    expect(page.querySelector('app-application-dialog h2')?.textContent).toBe('Add application');
+    expect(page.querySelector('app-application-dialog h2')?.textContent?.trim()).toBe(
+      'Add application',
+    );
 
-    page.querySelector<HTMLButtonElement>('app-application-dialog button[aria-label="Close"]')?.click();
+    page
+      .querySelector<HTMLButtonElement>('app-application-dialog button[aria-label="Close"]')
+      ?.click();
     await fixture.whenStable();
     expect(page.querySelector('app-application-dialog')).toBeNull();
 
     page.querySelector<HTMLElement>('.column[data-status="SAVED"] .card')?.click();
     await fixture.whenStable();
-    expect(page.querySelector('app-application-dialog h2')?.textContent).toBe('Edit application');
-    expect(page.querySelector<HTMLInputElement>('app-application-dialog #company')?.value).toBe('Acme');
+    expect(page.querySelector('app-application-dialog h2')?.textContent?.trim()).toBe(
+      'Edit application',
+    );
+    expect(page.querySelector<HTMLInputElement>('app-application-dialog #company')?.value).toBe(
+      'Acme',
+    );
   });
 });

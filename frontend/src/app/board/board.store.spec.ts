@@ -137,7 +137,11 @@ describe('BoardStore', () => {
         () =>
           new HttpErrorResponse({
             status: 404,
-            error: { code: 'APPLICATION_NOT_FOUND', message: 'Application not found', fieldErrors: [] },
+            error: {
+              code: 'APPLICATION_NOT_FOUND',
+              message: 'Application not found',
+              fieldErrors: [],
+            },
           }),
       ),
     );

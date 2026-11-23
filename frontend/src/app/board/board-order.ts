@@ -12,7 +12,10 @@ export function byPosition(a: JobApplication, b: JobApplication): number {
 }
 
 /** The cards of one column, in order. */
-export function cardsIn(cards: readonly JobApplication[], status: ApplicationStatus): JobApplication[] {
+export function cardsIn(
+  cards: readonly JobApplication[],
+  status: ApplicationStatus,
+): JobApplication[] {
   return cards.filter((card) => card.status === status).sort(byPosition);
 }
 
@@ -51,7 +54,10 @@ export function moveCard(
 }
 
 /** Returns the list without one card, closing the gap it leaves in its column. */
-export function removeCard(cards: readonly JobApplication[], id: string): readonly JobApplication[] {
+export function removeCard(
+  cards: readonly JobApplication[],
+  id: string,
+): readonly JobApplication[] {
   const card = cards.find((candidate) => candidate.id === id);
   if (card === undefined) {
     return cards;

@@ -59,7 +59,9 @@ export class MatchPanel implements OnInit {
     return RUN_ERROR_LABELS[run.errorCode ?? ''] ?? 'The run failed. Please try again.';
   });
   protected readonly writerReason = computed(() => {
-    const writer = this.run()?.steps.find((step) => step.agent === 'WRITER' && step.source === 'SKIPPED');
+    const writer = this.run()?.steps.find(
+      (step) => step.agent === 'WRITER' && step.source === 'SKIPPED',
+    );
     return writer?.reason ? REASON_LABELS[writer.reason] : 'the AI writer was unavailable';
   });
 

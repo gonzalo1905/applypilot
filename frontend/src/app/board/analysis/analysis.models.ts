@@ -5,7 +5,8 @@ export type Seniority = 'INTERN' | 'JUNIOR' | 'MID' | 'SENIOR' | 'LEAD' | 'UNSPE
 /** LLM: the AI model produced the result. FALLBACK: the keyword extractor did. */
 export type AnalysisSource = 'LLM' | 'FALLBACK';
 
-export type FallbackReason = 'NOT_CONFIGURED' | 'RATE_LIMITED' | 'PROVIDER_ERROR' | 'INVALID_OUTPUT';
+export type FallbackReason =
+  'NOT_CONFIGURED' | 'RATE_LIMITED' | 'PROVIDER_ERROR' | 'INVALID_OUTPUT';
 
 /** Structured data extracted from an application's job posting (see the backend's AnalysisResponse). */
 export interface JobAnalysis {

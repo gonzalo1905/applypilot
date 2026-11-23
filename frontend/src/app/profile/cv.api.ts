@@ -21,11 +21,15 @@ export class CvApi {
 
   /** The user's CV, or null when none has been uploaded yet (the API answers 404). */
   get(): Observable<CvMetadata | null> {
-    return this.http.get<CvMetadata>(this.baseUrl).pipe(
-      catchError((error: unknown) =>
-        error instanceof HttpErrorResponse && error.status === 404 ? of(null) : throwError(() => error),
-      ),
-    );
+    return this.http
+      .get<CvMetadata>(this.baseUrl)
+      .pipe(
+        catchError((error: unknown) =>
+          error instanceof HttpErrorResponse && error.status === 404
+            ? of(null)
+            : throwError(() => error),
+        ),
+      );
   }
 
   /** Uploads a CV, replacing the previous one. */

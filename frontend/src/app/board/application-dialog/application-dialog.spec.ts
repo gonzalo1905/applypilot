@@ -28,7 +28,10 @@ describe('ApplicationDialog', () => {
   let page: HTMLElement;
   let closed: number;
 
-  async function render(application: JobApplication | null, initialStatus = 'SAVED'): Promise<void> {
+  async function render(
+    application: JobApplication | null,
+    initialStatus = 'SAVED',
+  ): Promise<void> {
     await TestBed.configureTestingModule({
       imports: [ApplicationDialog],
       providers: [
@@ -48,7 +51,9 @@ describe('ApplicationDialog', () => {
   }
 
   function type(selector: string, value: string): void {
-    const input = page.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(selector)!;
+    const input = page.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
+      selector,
+    )!;
     input.value = value;
     input.dispatchEvent(new Event(input instanceof HTMLSelectElement ? 'change' : 'input'));
   }
@@ -81,7 +86,7 @@ describe('ApplicationDialog', () => {
     it('preselects the column it was opened from', async () => {
       await render(null, 'INTERVIEW');
 
-      expect(page.querySelector('h2')?.textContent).toBe('Add application');
+      expect(page.querySelector('h2')?.textContent?.trim()).toBe('Add application');
       expect(page.querySelector<HTMLSelectElement>('#status')?.value).toBe('INTERVIEW');
     });
 
@@ -91,7 +96,9 @@ describe('ApplicationDialog', () => {
       await submit();
 
       expect(store.create).not.toHaveBeenCalled();
-      const errors = Array.from(page.querySelectorAll('.field-error')).map((e) => e.textContent?.trim());
+      const errors = Array.from(page.querySelectorAll('.field-error')).map((e) =>
+        e.textContent?.trim(),
+      );
       expect(errors).toEqual([
         'Enter the company (up to 120 characters).',
         'Enter the role (up to 160 characters).',
@@ -166,9 +173,11 @@ describe('ApplicationDialog', () => {
     it('fills the form with the card', async () => {
       await render(existing);
 
-      expect(page.querySelector('h2')?.textContent).toBe('Edit application');
+      expect(page.querySelector('h2')?.textContent?.trim()).toBe('Edit application');
       expect(page.querySelector<HTMLInputElement>('#company')?.value).toBe('Acme');
-      expect(page.querySelector<HTMLInputElement>('#jobUrl')?.value).toBe('https://acme.example/jobs/1');
+      expect(page.querySelector<HTMLInputElement>('#jobUrl')?.value).toBe(
+        'https://acme.example/jobs/1',
+      );
       expect(page.querySelector<HTMLSelectElement>('#workMode')?.value).toBe('HYBRID');
       expect(page.querySelector<HTMLTextAreaElement>('#notes')?.value).toBe('Referred by Ana');
     });
@@ -181,7 +190,11 @@ describe('ApplicationDialog', () => {
 
       expect(store.update).toHaveBeenCalledWith(
         'acme',
-        expect.objectContaining({ company: 'Acme Corp', roleTitle: 'Backend Developer', location: 'Lima' }),
+        expect.objectContaining({
+          company: 'Acme Corp',
+          roleTitle: 'Backend Developer',
+          location: 'Lima',
+        }),
       );
       expect(store.update.mock.calls[0][1]).not.toHaveProperty('status');
       expect(store.move).not.toHaveBeenCalled();

@@ -22,9 +22,7 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
 
   const token = auth.token();
   const authorized =
-    token === null
-      ? request
-      : request.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
+    token === null ? request : request.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
 
   return next(authorized).pipe(
     catchError((error: unknown) => {
