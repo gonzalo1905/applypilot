@@ -4,6 +4,7 @@ import com.applypilot.agent.AgentRunExceptions.AgentRunNotFoundException;
 import com.applypilot.agent.AgentRunExceptions.AgentRunsBusyException;
 import com.applypilot.agent.AgentRunExceptions.AnalysisRequiredException;
 import com.applypilot.agent.AgentRunExceptions.CvRequiredException;
+import com.applypilot.agent.AgentRunExceptions.NotEnoughAiCallsException;
 import com.applypilot.agent.dto.AgentRunResponse;
 import com.applypilot.agent.dto.StartAgentRunRequest;
 import com.applypilot.analysis.AiDailyLimitReachedException;
@@ -34,6 +35,14 @@ public class AgentRunService {
 
 	/** A run still active after this long is considered dead and no longer blocks new runs. */
 	static final Duration STALE_AFTER = Duration.ofMinutes(15);
+
+	/**
+	 * Calls a run needs at the very least: one each for Matcher, Writer and Reviewer, plus an
+	 * analysis. Below this a run could only degrade, so it is refused instead. This is a check,
+	 * not a reservation: a run with retries and revisions can use up to about 19 calls, and
+	 * one that runs out midway still degrades.
+	 */
+	static final int MIN_CALLS_TO_START = 4;
 
 	private final AgentRunRepository runs;
 
@@ -92,6 +101,7 @@ public class AgentRunService {
 	 * @throws AnalysisRequiredException 409 when there is neither a stored analysis nor text
 	 * @throws AiDailyLimitReachedException 429 when the model is configured and no call is
 	 * left today (without a model, runs use their fallbacks and cost nothing)
+	 * @throws NotEnoughAiCallsException 429 when fewer than {@value #MIN_CALLS_TO_START} are left
 	 * @throws AgentRunsBusyException 503 when the queue is full
 	 */
 	public AgentRunResponse start(UUID userId, UUID applicationId, StartAgentRunRequest request) {
@@ -116,8 +126,14 @@ public class AgentRunService {
 			if (postingText == null && analyses.findByApplicationIdAndUserId(applicationId, userId).isEmpty()) {
 				throw new AnalysisRequiredException();
 			}
-			if (model.isConfigured() && usageLimiter.remaining(userId) == 0) {
-				throw new AiDailyLimitReachedException(aiProperties.dailyLimit());
+			if (model.isConfigured()) {
+				int remaining = usageLimiter.remaining(userId);
+				if (remaining == 0) {
+					throw new AiDailyLimitReachedException(aiProperties.dailyLimit());
+				}
+				if (remaining < MIN_CALLS_TO_START) {
+					throw new NotEnoughAiCallsException(remaining, MIN_CALLS_TO_START);
+				}
 			}
 			return new Started(runs.save(new AgentRun(applicationId, userId, clock.instant())).getId(), true);
 		});

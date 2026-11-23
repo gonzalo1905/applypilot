@@ -124,7 +124,7 @@ class AgentRunServiceTest {
 	@Test
 	void queuesANewPendingRunAndHandsTheTextToTheOrchestrator() {
 		when(model.isConfigured()).thenReturn(true);
-		when(usageLimiter.remaining(USER_ID)).thenReturn(3);
+		when(usageLimiter.remaining(USER_ID)).thenReturn(10);
 
 		AgentRunResponse response = service.start(USER_ID, APPLICATION_ID, new StartAgentRunRequest(POSTING_TEXT));
 
@@ -215,6 +215,17 @@ class AgentRunServiceTest {
 			.hasMessageContaining("20");
 		assertThat(stored).isEmpty();
 		verifyNoInteractions(executor);
+	}
+
+	@Test
+	void refusesARunThatCouldOnlyDegradeForLackOfCalls() {
+		when(model.isConfigured()).thenReturn(true);
+		when(usageLimiter.remaining(USER_ID)).thenReturn(AgentRunService.MIN_CALLS_TO_START - 1);
+
+		assertThatThrownBy(() -> service.start(USER_ID, APPLICATION_ID, null))
+			.isInstanceOf(AgentRunExceptions.NotEnoughAiCallsException.class)
+			.hasMessageContaining("needs at least 4 AI calls and you have 3 left");
+		assertThat(stored).isEmpty();
 	}
 
 	@Test

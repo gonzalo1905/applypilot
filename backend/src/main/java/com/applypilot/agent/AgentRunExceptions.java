@@ -34,6 +34,15 @@ public final class AgentRunExceptions {
 
 	}
 
+	public static class NotEnoughAiCallsException extends ApiException {
+
+		public NotEnoughAiCallsException(int remaining, int needed) {
+			super(HttpStatus.TOO_MANY_REQUESTS, "NOT_ENOUGH_AI_CALLS", "A match run needs at least " + needed
+					+ " AI calls and you have " + remaining + " left today. Try again tomorrow.");
+		}
+
+	}
+
 	public static class AgentRunsBusyException extends ApiException {
 
 		public AgentRunsBusyException() {
