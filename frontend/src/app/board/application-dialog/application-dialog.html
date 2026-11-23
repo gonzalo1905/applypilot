@@ -1,3 +1,8 @@
+<!--
+  The click handler only closes the dialog when the backdrop is clicked. Keyboard users close
+  it with Escape, which the native <dialog> already handles, and the dialog is not a control.
+-->
+<!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
 <dialog
   #dialog
   class="dialog"
@@ -7,7 +12,9 @@
 >
   <form class="dialog-body" [formGroup]="form" (ngSubmit)="submit()" novalidate>
     <header class="dialog-header">
-      <h2 id="application-dialog-title">{{ isEditing() ? 'Edit application' : 'Add application' }}</h2>
+      <h2 id="application-dialog-title">
+        {{ isEditing() ? 'Edit application' : 'Add application' }}
+      </h2>
       <button class="icon-btn" type="button" aria-label="Close" (click)="close()">×</button>
     </header>
 
@@ -101,7 +108,12 @@
 
       <div class="field wide">
         <label for="salaryNote">Salary</label>
-        <input id="salaryNote" type="text" formControlName="salaryNote" placeholder="USD 3,000 / month" />
+        <input
+          id="salaryNote"
+          type="text"
+          formControlName="salaryNote"
+          placeholder="USD 3,000 / month"
+        />
         @if (form.controls.salaryNote.invalid) {
           <span class="field-error">Use up to 120 characters.</span>
         }
@@ -127,12 +139,22 @@
         <button class="btn btn-ghost" type="button" [disabled]="saving()" (click)="cancelDelete()">
           Keep it
         </button>
-        <button class="btn btn-danger" type="button" [disabled]="saving()" (click)="confirmDelete()">
+        <button
+          class="btn btn-danger"
+          type="button"
+          [disabled]="saving()"
+          (click)="confirmDelete()"
+        >
           Delete
         </button>
       } @else {
         @if (isEditing()) {
-          <button class="btn btn-danger-ghost" type="button" [disabled]="saving()" (click)="askToDelete()">
+          <button
+            class="btn btn-danger-ghost"
+            type="button"
+            [disabled]="saving()"
+            (click)="askToDelete()"
+          >
             Delete
           </button>
         }
