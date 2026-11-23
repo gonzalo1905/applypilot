@@ -15,7 +15,8 @@ import org.springframework.validation.annotation.Validated;
  * @param maxCompletionTokens upper bound on generated tokens per call (cost and latency cap)
  * @param reasoningEffort optional hint for reasoning models ("low", "medium", "high");
  * blank sends nothing, for providers or models that do not know the parameter
- * @param dailyLimit AI calls each user may make per day, to protect the provider quota
+ * @param dailyLimit AI analyses each user may run per day, to protect the provider quota. One
+ * analysis is one or, when the first answer is rejected, two model calls
  */
 @Validated
 @ConfigurationProperties(prefix = "app.ai")

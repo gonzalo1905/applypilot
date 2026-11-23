@@ -50,7 +50,8 @@ app:
     max-completion-tokens: 2000
     # Hint for reasoning models; leave empty for providers that reject the parameter.
     reasoning-effort: ${AI_REASONING_EFFORT:low}
-    # AI calls per user per day; protects the provider's free quota.
+    # AI analyses per user per day (each is one model call, two if the first answer is
+    # rejected); protects the provider's free quota.
     daily-limit: ${AI_DAILY_LIMIT:20}
   cv:
     max-size: 5MB
