@@ -11,7 +11,7 @@ public class AiDailyLimitReachedException extends ApiException {
 
 	public AiDailyLimitReachedException(int dailyLimit) {
 		super(HttpStatus.TOO_MANY_REQUESTS, "AI_DAILY_LIMIT_REACHED", "You have used your " + dailyLimit
-				+ " AI analyses for today. Try again tomorrow.");
+				+ " AI calls for today. Try again tomorrow.");
 	}
 
 }

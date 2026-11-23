@@ -1,7 +1,9 @@
 package com.applypilot.analysis;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -11,6 +13,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,7 +44,7 @@ class AiUsageLimiterTest {
 		when(repository.incrementIfBelowLimit(USER_ID, LocalDate.of(2026, 11, 20), 20)).thenReturn(0);
 
 		assertThatThrownBy(() -> limiter(20).acquire(USER_ID)).isInstanceOf(AiDailyLimitReachedException.class)
-			.hasMessageContaining("20 AI analyses");
+			.hasMessageContaining("20 AI calls");
 		verify(repository).incrementIfBelowLimit(USER_ID, LocalDate.of(2026, 11, 20), 20);
 	}
 
@@ -49,6 +52,23 @@ class AiUsageLimiterTest {
 	void aLimitOfZeroDisablesAiCallsWithoutTouchingTheDatabase() {
 		assertThatThrownBy(() -> limiter(0).acquire(USER_ID)).isInstanceOf(AiDailyLimitReachedException.class);
 		verifyNoInteractions(repository);
+	}
+
+	@Test
+	void reportsTheCallsLeftTodayAndNeverLessThanZero() {
+		AiUsage usage = mock(AiUsage.class);
+		when(usage.getCalls()).thenReturn(18);
+		when(repository.findByUserIdAndUsageDate(USER_ID, LocalDate.of(2026, 11, 20))).thenReturn(Optional.of(usage));
+
+		assertThat(limiter(20).remaining(USER_ID)).isEqualTo(2);
+		assertThat(limiter(10).remaining(USER_ID)).isZero();
+	}
+
+	@Test
+	void aUserWithoutCallsTodayHasTheWholeLimit() {
+		when(repository.findByUserIdAndUsageDate(USER_ID, LocalDate.of(2026, 11, 20))).thenReturn(Optional.empty());
+
+		assertThat(limiter(30).remaining(USER_ID)).isEqualTo(30);
 	}
 
 	private AiUsageLimiter limiter(int dailyLimit) {

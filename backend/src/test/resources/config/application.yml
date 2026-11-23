@@ -5,3 +5,7 @@ spring:
   ai:
     openai:
       api-key: not-configured
+app:
+  ai:
+    # Tests that exercise the limit are written for 20 calls a day, whatever the default.
+    daily-limit: 20

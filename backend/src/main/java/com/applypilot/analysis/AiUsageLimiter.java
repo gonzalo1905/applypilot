@@ -40,4 +40,11 @@ public class AiUsageLimiter {
 		}
 	}
 
+	/** Calls the user still has today; a quick check before starting multi-call work. */
+	@Transactional(readOnly = true)
+	public int remaining(UUID userId) {
+		int used = repository.findByUserIdAndUsageDate(userId, LocalDate.now(clock)).map(AiUsage::getCalls).orElse(0);
+		return Math.max(0, properties.dailyLimit() - used);
+	}
+
 }
