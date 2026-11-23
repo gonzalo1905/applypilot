@@ -19,7 +19,12 @@ function hint(file) {
     if (existsSync(unit)) {
       return `Related unit test: ${name}Test. Run it from backend/ with JDK 21: ./mvnw -q test -Dtest=${name}Test`;
     }
-    return `No ${name}Test exists for ${name}.java. Consider adding one (the test-writer subagent can draft it).`;
+    // Records, DTOs, entities and exceptions are covered through the classes that use them;
+    // only classes with behaviour get the "no test" hint, so it is not noise.
+    if (/(Service|Agent|Controller|Orchestrator|Scoring|Matcher|Tools|Recorder|Limiter|Extractor|Filter)$/.test(name)) {
+      return `No ${name}Test exists for ${name}.java. Consider adding one (the test-writer subagent can draft it).`;
+    }
+    return null;
   }
   const test = normalized.match(/backend\/src\/test\/java\/.+\/(\w+(Test|IT))\.java$/);
   if (test) {
