@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { AnalysisApi } from '../analysis/analysis.api';
+import { MatchApi } from '../match/match.api';
 import { JobApplication } from '../application.models';
 import { BoardStore } from '../board.store';
 import { card } from '../testing/application.fixtures';
@@ -34,6 +35,7 @@ describe('ApplicationDialog', () => {
         { provide: BoardStore, useValue: store },
         // The embedded analysis panel loads on open; these tests are about the form.
         { provide: AnalysisApi, useValue: { get: vi.fn(() => of(null)), analyze: vi.fn() } },
+        { provide: MatchApi, useValue: { latest: vi.fn(() => of(null)), start: vi.fn() } },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(ApplicationDialog);

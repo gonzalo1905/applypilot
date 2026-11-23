@@ -118,6 +118,7 @@
 
     @if (application(); as existing) {
       <app-job-analysis-panel [applicationId]="existing.id" />
+      <app-match-panel [applicationId]="existing.id" />
     }
 
     <footer class="dialog-footer">

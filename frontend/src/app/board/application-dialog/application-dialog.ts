@@ -12,6 +12,7 @@ import {
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toErrorMessage, toFieldErrors } from '../../core/api-error';
 import { JobAnalysisPanel } from '../analysis/job-analysis-panel/job-analysis-panel';
+import { MatchPanel } from '../match/match-panel/match-panel';
 import {
   ApplicationDetails,
   ApplicationStatus,
@@ -30,7 +31,7 @@ import { BoardStore } from '../board.store';
  */
 @Component({
   selector: 'app-application-dialog',
-  imports: [ReactiveFormsModule, JobAnalysisPanel],
+  imports: [ReactiveFormsModule, JobAnalysisPanel, MatchPanel],
   templateUrl: './application-dialog.html',
   styleUrl: './application-dialog.scss',
 })
