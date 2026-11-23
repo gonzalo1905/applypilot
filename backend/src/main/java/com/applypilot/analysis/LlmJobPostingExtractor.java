@@ -72,8 +72,11 @@ public class LlmJobPostingExtractor implements JobPostingExtractor {
 			- Answer with one JSON object that matches the schema and nothing else.
 			""".formatted(OPEN_TAG, CLOSE_TAG);
 
-	/** The posting must not be able to close its own wrapper and "escape" into the prompt. */
-	private static final Pattern WRAPPER_TAGS = Pattern.compile("(?i)</?\\s*job_posting\\s*>");
+	/**
+	 * Anything a model could read as our wrapper tag: any case, spaces anywhere, attributes.
+	 * The posting must not be able to close its own wrapper and "escape" into the prompt.
+	 */
+	private static final Pattern WRAPPER_TAGS = Pattern.compile("(?i)<\\s*/?\\s*job_posting\\b[^>]*>");
 
 	private static final Logger log = LoggerFactory.getLogger(LlmJobPostingExtractor.class);
 
@@ -119,7 +122,15 @@ public class LlmJobPostingExtractor implements JobPostingExtractor {
 
 	/** The posting, wrapped in tags it cannot close, followed by the request. */
 	static String userPrompt(String postingText) {
-		String safeText = WRAPPER_TAGS.matcher(postingText).replaceAll("");
+		// Repeated until nothing matches: removing "</job_posting>" from the middle of
+		// "</job_po</job_posting>sting>" would otherwise leave a new, valid tag behind.
+		String safeText = postingText;
+		String previous;
+		do {
+			previous = safeText;
+			safeText = WRAPPER_TAGS.matcher(previous).replaceAll("");
+		}
+		while (!safeText.equals(previous));
 		return OPEN_TAG + "\n" + safeText + "\n" + CLOSE_TAG + "\n\nExtract the fields from the posting above.";
 	}
 
