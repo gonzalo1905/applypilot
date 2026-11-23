@@ -87,5 +87,15 @@
       </div>
     }
   </section>
-  <app-tokens-panel />
+  @if (!isDemo()) {
+    <app-tokens-panel />
+  } @else {
+    <section class="panel" aria-labelledby="tokens-title">
+      <h2 id="tokens-title">Connect Claude (MCP)</h2>
+      <p class="muted">
+        The shared demo account cannot create access tokens. Run ApplyPilot locally to connect
+        Claude Desktop or Claude Code (see docs/MCP.md in the repository).
+      </p>
+    </section>
+  }
 </main>

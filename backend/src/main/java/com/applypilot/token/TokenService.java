@@ -1,9 +1,12 @@
 package com.applypilot.token;
 
+import com.applypilot.auth.DemoAccount;
 import com.applypilot.common.error.ApiException;
 import com.applypilot.token.dto.CreateTokenRequest;
 import com.applypilot.token.dto.CreatedTokenResponse;
 import com.applypilot.token.dto.TokenResponse;
+import com.applypilot.user.User;
+import com.applypilot.user.UserRepository;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -38,15 +41,23 @@ public class TokenService {
 
 	private final PersonalAccessTokenRepository tokens;
 
+	private final UserRepository users;
+
 	private final Clock clock;
 
-	public TokenService(PersonalAccessTokenRepository tokens, Clock clock) {
+	public TokenService(PersonalAccessTokenRepository tokens, UserRepository users, Clock clock) {
 		this.tokens = tokens;
+		this.users = users;
 		this.clock = clock;
 	}
 
 	@Transactional
 	public CreatedTokenResponse create(UUID userId, CreateTokenRequest request) {
+		// Every demo visitor is the same user: their tokens would be visible to, and revocable
+		// by, strangers, and would outlive the demo being switched off.
+		if (users.findById(userId).map(User::getEmail).filter(DemoAccount.EMAIL::equals).isPresent()) {
+			throw new DemoTokensNotAllowedException();
+		}
 		if (tokens.countByUserIdAndRevokedAtIsNull(userId) >= MAX_ACTIVE_TOKENS) {
 			throw new TooManyTokensException();
 		}
@@ -99,6 +110,15 @@ public class TokenService {
 
 		public TokenNotFoundException() {
 			super(HttpStatus.NOT_FOUND, "TOKEN_NOT_FOUND", "Token not found");
+		}
+
+	}
+
+	public static class DemoTokensNotAllowedException extends ApiException {
+
+		public DemoTokensNotAllowedException() {
+			super(HttpStatus.FORBIDDEN, "DEMO_TOKENS_NOT_ALLOWED",
+					"The shared demo account cannot create access tokens. Run ApplyPilot locally to try MCP.");
 		}
 
 	}

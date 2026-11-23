@@ -7,8 +7,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.applypilot.auth.DemoAccount;
 import com.applypilot.token.dto.CreateTokenRequest;
 import com.applypilot.token.dto.CreatedTokenResponse;
+import com.applypilot.user.User;
+import com.applypilot.user.UserRepository;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -30,8 +33,21 @@ class TokenServiceTest {
 	@Mock
 	private PersonalAccessTokenRepository tokens;
 
+	@Mock
+	private UserRepository users;
+
 	private TokenService service() {
-		return new TokenService(tokens, Clock.fixed(NOW, ZoneOffset.UTC));
+		return new TokenService(tokens, users, Clock.fixed(NOW, ZoneOffset.UTC));
+	}
+
+	@Test
+	void theSharedDemoAccountCannotCreateTokens() {
+		when(users.findById(USER_ID))
+			.thenReturn(Optional.of(new User(DemoAccount.EMAIL, "unusable", DemoAccount.FULL_NAME)));
+
+		assertThatThrownBy(() -> service().create(USER_ID, new CreateTokenRequest("Mine")))
+			.isInstanceOf(TokenService.DemoTokensNotAllowedException.class);
+		verify(tokens, never()).save(any());
 	}
 
 	@Test

@@ -30,7 +30,7 @@ ENV SPRING_PROFILES_ACTIVE=prod \
     STORAGE_DIR=/app/storage \
     # Sized for free hosting (512 MB, a fraction of a CPU): heap within the container's
     # limit, a single-threaded collector, and the fast-starting JIT tier.
-    JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=70 -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Xss512k"
+    JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=65 -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Xss512k"
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
     CMD wget -qO- "http://localhost:${PORT:-8080}/actuator/health" || exit 1

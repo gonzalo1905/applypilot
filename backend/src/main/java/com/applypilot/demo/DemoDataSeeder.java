@@ -104,7 +104,8 @@ public class DemoDataSeeder {
 		}
 		catch (RuntimeException ex) {
 			// The demo is a convenience: the application must start even if seeding fails.
-			log.error("Could not prepare the demo account: {}", ex.getClass().getName());
+			// The message names what failed (a path, a limit); it holds no secrets.
+			log.error("Could not prepare the demo account: {}: {}", ex.getClass().getName(), ex.getMessage());
 		}
 	}
 
@@ -114,15 +115,23 @@ public class DemoDataSeeder {
 				new User(DemoAccount.EMAIL, passwordEncoder.encode(UUID.randomUUID().toString()),
 						DemoAccount.FULL_NAME)));
 		UUID userId = demo.getId();
-		cvService.upload(userId, DemoData.CV_FILE_NAME, "application/pdf", cvPdf());
-		LocalDate today = LocalDate.now(clock);
-		for (DemoData.Card card : DemoData.cards(today)) {
-			ApplicationResponse created = applications.create(userId,
-					new CreateApplicationRequest(card.company(), card.roleTitle(), null, card.location(),
-							card.workMode(), null, card.notes(), card.status(), card.appliedAt()));
-			if (card.posting() != null) {
-				analyses.analyze(userId, created.id(), new AnalyzeRequest(card.posting()));
+		try {
+			cvService.upload(userId, DemoData.CV_FILE_NAME, "application/pdf", cvPdf());
+			LocalDate today = LocalDate.now(clock);
+			for (DemoData.Card card : DemoData.cards(today)) {
+				ApplicationResponse created = applications.create(userId,
+						new CreateApplicationRequest(card.company(), card.roleTitle(), null, card.location(),
+								card.workMode(), null, card.notes(), card.status(), card.appliedAt()));
+				if (card.posting() != null) {
+					analyses.analyze(userId, created.id(), new AnalyzeRequest(card.posting()));
+				}
 			}
+		}
+		catch (RuntimeException ex) {
+			// A half-built demo would stay half-built: an existing account is never re-seeded.
+			// Removing it lets the next start try again from scratch.
+			delete(demo);
+			throw ex;
 		}
 		log.info("Demo account created");
 	}

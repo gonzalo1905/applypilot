@@ -6,6 +6,7 @@ import com.applypilot.agent.dto.AgentRunResponse;
 import com.applypilot.application.ApplicationService;
 import com.applypilot.application.ApplicationStatus;
 import com.applypilot.application.dto.ApplicationResponse;
+import com.applypilot.common.error.ApiException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +26,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class ApplyPilotMcpTools {
+
+	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ApplyPilotMcpTools.class);
 
 	private final ApplicationService applications;
 
@@ -46,11 +49,11 @@ public class ApplyPilotMcpTools {
 	public List<ApplicationSummary> listApplications(@ToolParam(required = false,
 			description = "Only applications in this column: SAVED, APPLIED, INTERVIEW, OFFER or REJECTED") String status) {
 		ApplicationStatus filter = parseStatus(status);
-		return applications.list(McpUser.require())
+		return safely(() -> applications.list(McpUser.require())
 			.stream()
 			.filter(application -> filter == null || application.status() == filter)
 			.map(ApplicationSummary::from)
-			.toList();
+			.toList());
 	}
 
 	@Tool(name = "get_match",
@@ -65,7 +68,25 @@ public class ApplyPilotMcpTools {
 		catch (IllegalArgumentException ex) {
 			throw new IllegalArgumentException("applicationId must be an id returned by list_applications");
 		}
-		return MatchSummary.from(runs.latest(McpUser.require(), id));
+		return safely(() -> MatchSummary.from(runs.latest(McpUser.require(), id)));
+	}
+
+	/**
+	 * The tool's error message goes to the MCP client as is. Our API errors are written for
+	 * users; anything else (a database error, for example) could reveal internals, so it is
+	 * logged here and replaced by a generic message.
+	 */
+	private static <T> T safely(java.util.function.Supplier<T> call) {
+		try {
+			return call.get();
+		}
+		catch (ApiException ex) {
+			throw new IllegalArgumentException(ex.getMessage());
+		}
+		catch (RuntimeException ex) {
+			log.error("MCP tool failed: {}", ex.getClass().getName());
+			throw new IllegalStateException("ApplyPilot could not answer right now. Try again later.");
+		}
 	}
 
 	private static ApplicationStatus parseStatus(String status) {

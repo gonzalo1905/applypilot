@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { toErrorMessage } from '../core/api-error';
@@ -9,6 +9,9 @@ import { TokensPanel } from './tokens/tokens-panel';
 
 /** Must match the backend limit (app.cv.max-size). The backend enforces it; this is fast feedback. */
 export const MAX_CV_SIZE_BYTES = 5 * 1024 * 1024;
+
+/** Must match DemoAccount.EMAIL in the backend. */
+export const DEMO_EMAIL = 'demo@applypilot.dev';
 
 @Component({
   selector: 'app-profile',
@@ -21,6 +24,8 @@ export class Profile {
   private readonly cvApi = inject(CvApi);
 
   protected readonly user = this.auth.user;
+  /** The shared demo account; it cannot create MCP tokens (the API refuses it too). */
+  protected readonly isDemo = computed(() => this.user()?.email === DEMO_EMAIL);
   protected readonly cv = signal<CvMetadata | null>(null);
   protected readonly loading = signal(true);
   /** True while an upload, download or delete is in flight. */

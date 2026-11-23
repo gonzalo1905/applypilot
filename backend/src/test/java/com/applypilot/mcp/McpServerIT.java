@@ -73,6 +73,16 @@ class McpServerIT {
 	}
 
 	@Test
+	void aPersonalAccessTokenOpensNothingButTheMcpEndpoint() throws Exception {
+		String token = createToken(register());
+
+		HttpResponse<String> api = send(HttpRequest.newBuilder(URI.create(url("/api/applications")))
+			.header("Authorization", "Bearer " + token));
+
+		assertThat(api.statusCode()).isEqualTo(401);
+	}
+
+	@Test
 	void aRevokedTokenStopsWorking() throws Exception {
 		String owner = register();
 		String token = createToken(owner);

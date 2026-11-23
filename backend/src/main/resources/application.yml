@@ -67,8 +67,10 @@ app:
     daily-limit: ${AI_DAILY_LIMIT:30}
   access:
     registration-enabled: ${APP_REGISTRATION_ENABLED:true}
-    # Creates a demo account with fictitious data at startup (resets it on every start).
+    # Creates a demo account with fictitious data at startup, if it does not exist yet.
     demo-enabled: ${APP_DEMO_ENABLED:false}
+    # Deletes and recreates the demo account at the next start; turn it off again afterwards.
+    demo-reset-on-start: ${APP_DEMO_RESET_ON_START:false}
   cv:
     max-size: 5MB
     # Folder for uploaded CVs (git-ignored). Relative paths resolve from the working directory.

@@ -27,9 +27,11 @@ November 2026; free plans change, so check each service's pricing page.
 - **Uploaded files are temporary.** Render's free disk is wiped on every restart. CV *text*
   is in the database, so matching keeps working; only the PDF download may disappear. The
   demo CV is written again at every start.
-- **AI quota.** Every user, including the demo, gets `AI_DAILY_LIMIT` model calls per day
-  (10 here), on top of Groq's own free limits. Registration is closed, so visitors use the
-  demo account and cannot open accounts that spend more quota.
+- **AI quota.** Each account gets `AI_DAILY_LIMIT` model calls per day (10 here), on top of
+  Groq's own free limits. All visitors share **the one demo account**, so the whole demo gets
+  10 calls a day: about 3 "Match with my CV" runs (a run uses 3 to 6 calls). On the first
+  day, seeding the demo spends 3 of them. Raise `AI_DAILY_LIMIT` in Render if the demo gets
+  more visitors than that; registration stays closed, so nobody can open extra accounts.
 
 ## Secrets: where they go
 
