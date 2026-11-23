@@ -1,0 +1,58 @@
+# Production profile (SPRING_PROFILES_ACTIVE=prod), used by the Docker image.
+# Every secret comes from an environment variable set in the hosting dashboard. Where the
+# local profile has a development default, this file removes it, so a missing variable stops
+# the application at startup instead of running with a known value.
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      # Free Postgres tiers allow few connections, and two agent workers plus the web
+      # requests of a demo need only a handful.
+      maximum-pool-size: 5
+      minimum-idle: 1
+  ai:
+    openai:
+      api-key: ${AI_API_KEY:${GROQ_API_KEY:not-configured}}
+
+server:
+  # The platform tells the container which port to listen on.
+  port: ${PORT:8080}
+  # TLS ends at the platform's proxy; trust its X-Forwarded-* headers for scheme and host.
+  forward-headers-strategy: framework
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+
+# The API documentation stays a local development tool.
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+app:
+  jwt:
+    # No default: a production deployment must set a long random JWT_SECRET.
+    secret: ${JWT_SECRET}
+  cors:
+    # The frontend's public URL, for example https://applypilot.vercel.app
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
+  ai:
+    # Low on purpose: the public demo shares one free provider quota.
+    daily-limit: ${AI_DAILY_LIMIT:10}
+  access:
+    # Closed by default in production: visitors use the demo account, so strangers cannot
+    # spend the provider quota with accounts of their own.
+    registration-enabled: ${APP_REGISTRATION_ENABLED:false}
+    demo-enabled: ${APP_DEMO_ENABLED:true}
