@@ -40,6 +40,11 @@
 			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
 		<dependency>
+			<!-- MCP server: lets Claude Desktop or Claude Code read your applications. -->
+			<groupId>org.springframework.ai</groupId>
+			<artifactId>spring-ai-starter-mcp-server-webmvc</artifactId>
+		</dependency>
+		<dependency>
 			<!-- Only the health endpoint is exposed: the hosting platform polls it. -->
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
