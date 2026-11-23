@@ -1,0 +1,63 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "company",
+    "roleTitle",
+    "seniority",
+    "requiredSkills",
+    "niceToHaveSkills",
+    "workMode",
+    "location",
+    "languages",
+    "salary",
+    "summary"
+  ],
+  "properties": {
+    "company": {
+      "type": ["string", "null"],
+      "description": "Name of the hiring company, or null if the posting does not name it."
+    },
+    "roleTitle": {
+      "type": ["string", "null"],
+      "description": "Job title as written in the posting, or null if absent."
+    },
+    "seniority": {
+      "type": "string",
+      "enum": ["INTERN", "JUNIOR", "MID", "SENIOR", "LEAD", "UNSPECIFIED"],
+      "description": "Seniority level the posting asks for. UNSPECIFIED if it does not say."
+    },
+    "requiredSkills": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Technologies and skills stated as required. Short names such as Java or Spring Boot, at most 40, no duplicates."
+    },
+    "niceToHaveSkills": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Skills stated as optional, preferred or a plus. Empty if none."
+    },
+    "workMode": {
+      "type": ["string", "null"],
+      "enum": ["REMOTE", "HYBRID", "ONSITE", null],
+      "description": "Work arrangement, or null if the posting does not say."
+    },
+    "location": {
+      "type": ["string", "null"],
+      "description": "City, region or country of the job, or null if absent."
+    },
+    "languages": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Human languages required, in English, such as English or Spanish. Empty if none are stated."
+    },
+    "salary": {
+      "type": ["string", "null"],
+      "description": "Salary or range exactly as stated, including currency and period, or null if not stated."
+    },
+    "summary": {
+      "type": "string",
+      "description": "Neutral summary of the role in two or three sentences, in English."
+    }
+  }
+}
