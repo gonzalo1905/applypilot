@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toErrorMessage, toFieldErrors } from '../../core/api-error';
+import { JobAnalysisPanel } from '../analysis/job-analysis-panel/job-analysis-panel';
 import {
   ApplicationDetails,
   ApplicationStatus,
@@ -23,12 +24,13 @@ import { BoardStore } from '../board.store';
 
 /**
  * Modal form to create a card or edit an existing one (including deleting it, after a
- * confirmation step). Built on the browser's native <dialog>, which provides the backdrop,
- * focus trapping and Esc-to-close without any library.
+ * confirmation step), and for existing cards analyze the job posting. Built on the browser's
+ * native <dialog>, which provides the backdrop, focus trapping and Esc-to-close without any
+ * library.
  */
 @Component({
   selector: 'app-application-dialog',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, JobAnalysisPanel],
   templateUrl: './application-dialog.html',
   styleUrl: './application-dialog.scss',
 })

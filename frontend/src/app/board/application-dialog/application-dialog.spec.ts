@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
+import { AnalysisApi } from '../analysis/analysis.api';
 import { JobApplication } from '../application.models';
 import { BoardStore } from '../board.store';
 import { card } from '../testing/application.fixtures';
@@ -29,7 +30,11 @@ describe('ApplicationDialog', () => {
   async function render(application: JobApplication | null, initialStatus = 'SAVED'): Promise<void> {
     await TestBed.configureTestingModule({
       imports: [ApplicationDialog],
-      providers: [{ provide: BoardStore, useValue: store }],
+      providers: [
+        { provide: BoardStore, useValue: store },
+        // The embedded analysis panel loads on open; these tests are about the form.
+        { provide: AnalysisApi, useValue: { get: vi.fn(() => of(null)), analyze: vi.fn() } },
+      ],
     }).compileComponents();
     fixture = TestBed.createComponent(ApplicationDialog);
     fixture.componentRef.setInput('application', application);

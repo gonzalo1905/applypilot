@@ -116,6 +116,10 @@
       </div>
     </div>
 
+    @if (application(); as existing) {
+      <app-job-analysis-panel [applicationId]="existing.id" />
+    }
+
     <footer class="dialog-footer">
       @if (confirmingDelete()) {
         <p class="confirm-text" role="alert">Delete this application? This cannot be undone.</p>

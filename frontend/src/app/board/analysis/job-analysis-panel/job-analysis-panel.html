@@ -1,0 +1,106 @@
+<section class="analysis" aria-labelledby="analysis-title">
+  <header class="analysis-header">
+    <h3 id="analysis-title">Job posting analysis</h3>
+    @if (analysis(); as result) {
+      @if (result.source === 'LLM') {
+        <span class="badge badge-ai" [title]="result.model ?? ''">AI</span>
+      } @else {
+        <span class="badge badge-fallback">FALLBACK</span>
+      }
+      @if (result.cached) {
+        <span class="badge">Cached</span>
+      }
+    }
+  </header>
+
+  @if (errorMessage(); as message) {
+    <p class="alert-error" role="alert">{{ message }}</p>
+  }
+
+  @if (loading()) {
+    <p class="muted">Loading analysis…</p>
+  } @else if (editing()) {
+    <div class="field">
+      <label for="postingText">Paste the job posting</label>
+      <textarea
+        id="postingText"
+        rows="8"
+        [value]="postingText()"
+        [class.invalid]="tooLong()"
+        (input)="onInput($event)"
+        placeholder="Copy the full text of the posting here…"
+      ></textarea>
+      <span class="field-hint counter" [class.over]="tooLong()">
+        {{ postingText().length.toLocaleString('en-US') }} / {{ maxLength.toLocaleString('en-US') }}
+      </span>
+      @if (tooLong()) {
+        <span class="field-error">The posting is too long. Keep the relevant part (up to 20,000 characters).</span>
+      }
+    </div>
+    <div class="actions">
+      @if (analysis() !== null) {
+        <button class="btn btn-ghost" type="button" [disabled]="analyzing()" (click)="cancelEditing()">
+          Cancel
+        </button>
+      }
+      <button class="btn btn-primary" type="button" [disabled]="!canAnalyze()" (click)="analyze()">
+        {{ analyzing() ? 'Analyzing…' : 'Analyze job posting' }}
+      </button>
+    </div>
+  } @else if (analysis(); as result) {
+    @if (result.source === 'FALLBACK') {
+      <p class="fallback-note">
+        Keyword-based result: {{ result.fallbackReason ? fallbackLabels[result.fallbackReason] : 'AI unavailable' }}.
+        Only skills from a built-in list were detected.
+      </p>
+    }
+
+    <dl class="facts">
+      @if (result.roleTitle) {
+        <div><dt>Role</dt><dd>{{ result.roleTitle }}</dd></div>
+      }
+      @if (result.company) {
+        <div><dt>Company</dt><dd>{{ result.company }}</dd></div>
+      }
+      <div><dt>Seniority</dt><dd>{{ seniorityLabels[result.seniority] }}</dd></div>
+      @if (result.workMode) {
+        <div><dt>Work mode</dt><dd>{{ workModeLabels[result.workMode] }}</dd></div>
+      }
+      @if (result.location) {
+        <div><dt>Location</dt><dd>{{ result.location }}</dd></div>
+      }
+      @if (result.salary) {
+        <div><dt>Salary</dt><dd>{{ result.salary }}</dd></div>
+      }
+      @if (result.languages.length > 0) {
+        <div><dt>Languages</dt><dd>{{ result.languages.join(', ') }}</dd></div>
+      }
+    </dl>
+
+    <h4>Required skills</h4>
+    @if (result.requiredSkills.length > 0) {
+      <ul class="chips" aria-label="Required skills">
+        @for (skill of result.requiredSkills; track skill) {
+          <li class="chip chip-required">{{ skill }}</li>
+        }
+      </ul>
+    } @else {
+      <p class="muted">None detected.</p>
+    }
+
+    @if (result.niceToHaveSkills.length > 0) {
+      <h4>Nice to have</h4>
+      <ul class="chips" aria-label="Nice-to-have skills">
+        @for (skill of result.niceToHaveSkills; track skill) {
+          <li class="chip">{{ skill }}</li>
+        }
+      </ul>
+    }
+
+    <p class="summary">{{ result.summary }}</p>
+
+    <div class="actions">
+      <button class="btn btn-ghost" type="button" (click)="startEditing()">Analyze again</button>
+    </div>
+  }
+</section>
