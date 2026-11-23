@@ -133,6 +133,20 @@ class WriterAndReviewerTest {
 	}
 
 	@Test
+	void aNumberTheCvDoesNotContainBlocksApprovalEvenIfTheModelMissesIt() {
+		fake.answers(approval(true));
+		CoverLetterDraft invented = new CoverLetterDraft("en",
+				LETTER + " I also reduced infrastructure costs by 30% and led a team of 12.");
+
+		Review review = reviewer.review(meter, POSTING, POSTING_TEXT, CV, MATCH, invented);
+
+		assertThat(review.approved()).isFalse();
+		assertThat(review.fabricatedClaims()).extracting(ReviewerAnswer.FabricatedClaim::claim).containsExactly("30", "12");
+		// Without the model, the same code check still runs.
+		assertThat(reviewer.checksOnly(MATCH, invented, CV).approved()).isFalse();
+	}
+
+	@Test
 	void theReviewerApprovesAGoodLetter() {
 		fake.answers(approval(true));
 
@@ -145,7 +159,7 @@ class WriterAndReviewerTest {
 
 	@Test
 	void withoutTheModelOnlyCodeChecksRunAndTheReviewSaysSo() {
-		Review review = reviewer.checksOnly(MATCH, new CoverLetterDraft("en", LETTER));
+		Review review = reviewer.checksOnly(MATCH, new CoverLetterDraft("en", LETTER), CV);
 
 		assertThat(review.aiChecked()).isFalse();
 		assertThat(review.approved()).isTrue();

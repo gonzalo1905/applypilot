@@ -249,7 +249,7 @@ public class AgentRunOrchestrator {
 		}
 		catch (AgentStepFailedException ex) {
 			log.warn("Reviewer fell back to code checks on attempt {}: reason={}", attempt, ex.getReason());
-			Review review = reviewer.checksOnly(match, draft);
+			Review review = reviewer.checksOnly(match, draft, cvText);
 			trace.record(AgentName.REVIEWER, attempt, StepSource.FALLBACK, ex.getReason(), inputHash, review,
 					meter.usage(), started, start);
 			return review;

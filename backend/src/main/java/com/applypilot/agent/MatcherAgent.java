@@ -116,8 +116,19 @@ public class MatcherAgent {
 		List<String> facts = new ArrayList<>();
 
 		for (int round = 1; round <= MAX_ROUNDS; round++) {
-			ChatCompletion completion = model.converse(meter,
-					new ConversationRequest(SYSTEM_PROMPT, messages, CvTools.SPECS));
+			ChatCompletion completion;
+			try {
+				completion = model.converse(meter, new ConversationRequest(SYSTEM_PROMPT, messages, CvTools.SPECS));
+			}
+			catch (AgentStepFailedException ex) {
+				if (ex.getReason() != StepReason.PROVIDER_ERROR) {
+					throw ex; // rate limits and the daily limit end the step
+				}
+				// The evals showed the provider sometimes refuses a tool-mode request (HTTP 400,
+				// probably a malformed tool call). The structured call below needs no tools.
+				log.warn("Matcher tool conversation failed, continuing without tools");
+				break;
+			}
 			if (!completion.hasToolCalls()) {
 				Parsed<MatcherAnswer> parsed = answers.parse(completion.content(), MatcherAnswer.class);
 				if (parsed.isValid() && coversEverySkill(posting, parsed.value())) {

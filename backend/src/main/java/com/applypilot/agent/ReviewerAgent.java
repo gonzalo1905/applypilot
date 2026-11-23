@@ -1,5 +1,6 @@
 package com.applypilot.agent;
 
+import com.applypilot.agent.ReviewerAnswer.FabricatedClaim;
 import com.applypilot.analysis.ExtractedPosting;
 import com.applypilot.common.ai.ChatCompletionRequest;
 import java.util.ArrayList;
@@ -71,18 +72,35 @@ public class ReviewerAgent {
 
 		int words = wordCount(draft.letter());
 		String lengthIssue = lengthIssue(words);
-		boolean approved = answer.approved() && answer.fabricatedClaims().isEmpty() && lengthIssue == null;
-		return new Review(approved, answer.fabricatedClaims(),
-				merge(answer.missingRequirements(), unmentionedSkills(match, draft)), answer.toneIssues(), lengthIssue,
-				answer.suggestions(), words, true);
+		List<FabricatedClaim> claims = withUnknownNumbers(answer.fabricatedClaims(), draft, cvText);
+		boolean approved = answer.approved() && claims.isEmpty() && lengthIssue == null;
+		return new Review(approved, claims, merge(answer.missingRequirements(), unmentionedSkills(match, draft)),
+				answer.toneIssues(), lengthIssue, answer.suggestions(), words, true);
 	}
 
 	/** The review when the model is unavailable: only what code can check. */
-	public Review checksOnly(MatchResult match, CoverLetterDraft draft) {
+	public Review checksOnly(MatchResult match, CoverLetterDraft draft, String cvText) {
 		int words = wordCount(draft.letter());
 		String lengthIssue = lengthIssue(words);
-		return new Review(lengthIssue == null, List.of(), unmentionedSkills(match, draft), List.of(), lengthIssue,
-				List.of(NOT_CHECKED), words, false);
+		List<FabricatedClaim> claims = withUnknownNumbers(List.of(), draft, cvText);
+		return new Review(lengthIssue == null && claims.isEmpty(), claims, unmentionedSkills(match, draft), List.of(),
+				lengthIssue, List.of(NOT_CHECKED), words, false);
+	}
+
+	/**
+	 * Adds every number the letter uses that the CV does not contain: checked in code, so an
+	 * invented "30%" blocks approval even when the model reviewer misses it.
+	 */
+	static List<FabricatedClaim> withUnknownNumbers(List<FabricatedClaim> claims, CoverLetterDraft draft,
+			String cvText) {
+		List<FabricatedClaim> all = new ArrayList<>(claims);
+		for (String number : LetterFacts.numbersNotIn(draft.letter(), cvText)) {
+			if (all.stream().noneMatch(claim -> claim.claim().contains(number))) {
+				all.add(new FabricatedClaim(number, "This number does not appear in the CV. Remove it or use a "
+						+ "figure the CV states."));
+			}
+		}
+		return List.copyOf(all);
 	}
 
 	static int wordCount(String text) {

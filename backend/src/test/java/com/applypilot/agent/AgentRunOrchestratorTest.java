@@ -162,7 +162,9 @@ class AgentRunOrchestratorTest {
 
 	@Test
 	void theMatcherFallsBackToKeywordsAndTheReviewerToCodeChecks() {
+		// Tool mode fails, then the Matcher's structured call fails too: keywords take over.
 		fake.fails(() -> new LlmUnavailableException("down", null))
+			.fails(() -> new LlmUnavailableException("down", null))
 			.answers(draftJson("en", LETTER))
 			.fails(() -> new LlmUnavailableException("down", null));
 

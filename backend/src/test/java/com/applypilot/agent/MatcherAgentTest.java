@@ -176,6 +176,19 @@ class MatcherAgentTest {
 	}
 
 	@Test
+	void aProviderErrorInToolModeFallsThroughToTheStructuredCall() {
+		fake.callsTools(search("call_1", "Java"))
+			.fails(() -> new com.applypilot.common.ai.LlmUnavailableException("400 tool_use_failed", null))
+			.answers(VALID_ANSWER);
+
+		MatchResult result = matcher.match(meter, POSTING, CV);
+
+		assertThat(result.score()).isEqualTo(71);
+		assertThat(fake.structuredRequests).singleElement()
+			.satisfies(request -> assertThat(request.userPrompt()).contains("6 years of Java experience"));
+	}
+
+	@Test
 	void reportsProviderRateLimits() {
 		fake.fails(() -> new LlmRateLimitedException(new RuntimeException("429")));
 
