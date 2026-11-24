@@ -1,9 +1,15 @@
 .match {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--color-border);
+  gap: 0.9rem;
+  padding: 1.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+}
+
+:host-context([data-theme='light']) .match {
+  background: var(--color-bg);
 }
 
 .match-header {
@@ -13,57 +19,72 @@
 
   h3 {
     margin-right: auto;
-    font-size: 1rem;
+    font-size: 1.125rem;
   }
 }
 
+/* Section labels read like instrument labels: small, mono, uppercase. */
 h4 {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin: 0;
-  font-size: 0.8125rem;
-  font-weight: 600;
+  margin: 0.25rem 0 0;
   color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .badge {
-  padding: 0.1rem 0.5rem;
+  padding: 0.15rem 0.6rem;
   border: 1px solid var(--color-border);
   border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
   color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: none;
 }
 
 .status-succeeded,
 .badge-ok {
-  border-color: var(--status-offer);
-  color: var(--status-offer);
+  border-color: transparent;
+  background: var(--color-ok-surface);
+  color: var(--color-ok);
 }
 
 .status-partial,
 .badge-warn {
-  border-color: var(--status-interview);
-  color: var(--status-interview);
+  border-color: transparent;
+  background: var(--color-warn-surface);
+  color: var(--color-warn);
 }
 
 .status-failed {
-  border-color: var(--color-danger);
+  border-color: transparent;
+  background: var(--color-danger-surface);
   color: var(--color-danger);
 }
 
 .status-running,
 .status-pending {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  border-color: transparent;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-text);
 }
 
 .progress {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9375rem;
+  gap: 0.6rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font-size: 0.875rem;
 }
 
 .spinner {
@@ -81,26 +102,24 @@ h4 {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .spinner {
-    animation: none;
-  }
-}
-
 .score-row {
   display: flex;
-  align-items: center;
-  gap: 1rem;
   flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
 }
 
 .gauge {
-  width: 120px;
   flex-shrink: 0;
+  width: 132px;
 
   path {
     fill: none;
-    stroke-width: 10;
+    stroke-width: 9;
     stroke-linecap: round;
   }
 
@@ -108,56 +127,68 @@ h4 {
     stroke: var(--color-surface-muted);
   }
 
+  .gauge-value {
+    transition: stroke-dasharray 700ms var(--ease-out);
+  }
+
   .gauge-number {
-    font-size: 22px;
-    font-weight: 700;
     fill: var(--color-text);
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.04em;
   }
 }
 
 .gauge-high .gauge-value {
-  stroke: var(--status-offer);
+  stroke: var(--color-ok);
 }
 
 .gauge-medium .gauge-value {
-  stroke: var(--status-interview);
+  stroke: var(--color-primary);
 }
 
 .gauge-low .gauge-value {
-  stroke: var(--status-rejected);
+  stroke: var(--color-danger);
 }
 
 .summary {
-  flex: 1 1 220px;
+  flex: 1 1 240px;
   margin: 0;
+  color: var(--color-text-muted);
   font-size: 0.9375rem;
+  line-height: 1.6;
 }
 
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.375rem;
+  gap: 0.4rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .chip {
-  padding: 0.2rem 0.65rem;
+  flex: none;
+  padding: 0.1rem 0.6rem;
   border: 1px solid var(--color-border);
   border-radius: 999px;
-  background: var(--color-surface-muted);
+  background: var(--color-surface);
   font-size: 0.8125rem;
+  font-weight: 500;
   white-space: nowrap;
 }
 
 .chip-matched {
-  border-color: color-mix(in srgb, var(--status-offer) 50%, transparent);
-  background: color-mix(in srgb, var(--status-offer) 12%, var(--color-surface));
+  border-color: transparent;
+  background: var(--color-ok-surface);
+  color: var(--color-ok);
 }
 
 .chip-missing {
-  border-style: dashed;
+  border: 1px dashed var(--color-border-strong);
+  background: transparent;
+  color: var(--color-text-muted);
 }
 
 .chip-required {
@@ -167,55 +198,57 @@ h4 {
 .evidence {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: 0.55rem;
   margin: 0;
   padding: 0;
   list-style: none;
 
   li {
     display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
     flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.6rem;
   }
 }
 
 .quote {
-  font-size: 0.8125rem;
   color: var(--color-text-muted);
+  font-size: 0.8125rem;
   overflow-wrap: anywhere;
 }
 
 .note,
 .small {
-  font-size: 0.8125rem;
   color: var(--color-text-muted);
+  font-size: 0.8125rem;
 }
 
 .letter-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-top: 0.25rem;
 
   .lang {
-    font-weight: 400;
+    letter-spacing: 0.04em;
   }
 }
 
 .btn-small {
+  min-height: 28px;
   padding: 0.25rem 0.75rem;
   font-size: 0.8125rem;
 }
 
 .letter {
   margin: 0;
-  padding: 0.75rem 1rem;
+  padding: 1.1rem 1.25rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  background: var(--color-surface-muted);
+  background: var(--color-surface);
   font-family: var(--font-sans);
   font-size: 0.9375rem;
-  line-height: 1.55;
+  line-height: 1.7;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -223,11 +256,11 @@ h4 {
 .review {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: 0.4rem;
 }
 
 .review-label {
-  margin: 0.25rem 0 0;
+  margin: 0.35rem 0 0;
   font-size: 0.8125rem;
   font-weight: 600;
 }
@@ -242,28 +275,41 @@ h4 {
   color: var(--color-danger);
 }
 
+/* Run timeline: one instrument tile per step. */
 .timeline {
   font-size: 0.8125rem;
 
   summary {
-    cursor: pointer;
     color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
   }
 
   ol {
-    display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
-    margin: 0.5rem 0 0;
-    padding-left: 1.25rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.5rem;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    list-style: none;
   }
 }
 
 .step {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.25rem 0.5rem;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+
+  .badge {
+    align-self: flex-start;
+  }
 }
 
 .step-name {
@@ -273,16 +319,15 @@ h4 {
 .step-meta,
 .step-reason {
   color: var(--color-text-muted);
-}
-
-.step-reason {
-  flex-basis: 100%;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
 }
 
 .step-fallback .badge,
 .step-skipped .badge {
-  border-color: var(--status-interview);
-  color: var(--status-interview);
+  border-color: transparent;
+  background: var(--color-warn-surface);
+  color: var(--color-warn);
 }
 
 .actions {

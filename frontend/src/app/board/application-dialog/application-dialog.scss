@@ -1,3 +1,11 @@
+:host ::ng-deep .dialog {
+  width: min(760px, calc(100vw - 2rem));
+}
+
+.eyebrow {
+  margin-bottom: 0.25rem;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -20,6 +28,14 @@
 }
 
 @media (max-width: 520px) {
+  :host ::ng-deep .dialog {
+    width: min(760px, calc(100vw - 2rem));
+  }
+
+  .eyebrow {
+    margin-bottom: 0.25rem;
+  }
+
   .grid {
     grid-template-columns: 1fr;
   }

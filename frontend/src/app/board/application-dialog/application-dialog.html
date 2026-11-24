@@ -12,9 +12,14 @@
 >
   <form class="dialog-body" [formGroup]="form" (ngSubmit)="submit()" novalidate>
     <header class="dialog-header">
-      <h2 id="application-dialog-title">
-        {{ isEditing() ? 'Edit application' : 'Add application' }}
-      </h2>
+      <div>
+        <p class="eyebrow">
+          {{ application()?.company ?? 'New flight' }} · {{ isEditing() ? 'details' : 'draft' }}
+        </p>
+        <h2 id="application-dialog-title">
+          {{ isEditing() ? 'Edit application' : 'Add application' }}
+        </h2>
+      </div>
       <button class="icon-btn" type="button" aria-label="Close" (click)="close()">×</button>
     </header>
 
