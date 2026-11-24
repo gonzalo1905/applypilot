@@ -137,6 +137,12 @@ a {
   }
 }
 
+/* Links inside running text are underlined, so they do not rely on colour alone. */
+p a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 :root[data-theme='light'] a {
   color: var(--color-primary);
 }

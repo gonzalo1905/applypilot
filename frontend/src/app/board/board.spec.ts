@@ -8,7 +8,7 @@ import { AuthService } from '../auth/auth.service';
 import { ApplicationStatus, JobApplication } from './application.models';
 import { ApplicationsApi } from './applications.api';
 import { InsightsApi } from './insights.api';
-import { Board } from './board';
+import { Board, isoWeek } from './board';
 import { card } from './testing/application.fixtures';
 
 const user: User = {
@@ -186,5 +186,43 @@ describe('Board', () => {
     expect(page.querySelector<HTMLInputElement>('app-application-dialog #company')?.value).toBe(
       'Acme',
     );
+  });
+
+  it('shows match scores, including zero, and the board figures', async () => {
+    insightsApi.get.mockReturnValue(
+      of({ matchScores: { acme: 83, initech: 0 }, aiCallsLeft: 7, aiDailyLimit: 10 }),
+    );
+    await render();
+
+    const saved = page.querySelector('.column[data-status="SAVED"] .card')!;
+    expect(saved.querySelector('.score')?.textContent?.trim()).toBe('83');
+    expect(saved.getAttribute('aria-label')).toBe(
+      'Edit Backend Developer at Acme, match score 83 of 100',
+    );
+    expect(page.querySelector('.column[data-status="APPLIED"] .score')?.textContent?.trim()).toBe(
+      '0',
+    );
+    const figures = Array.from(page.querySelectorAll('.stats dd')).map((dd) =>
+      dd.textContent?.replace(/\s+/g, ''),
+    );
+    expect(figures).toEqual(['3', '83', '7/10']);
+  });
+
+  it('still shows the board when the insights cannot be loaded', async () => {
+    insightsApi.get.mockReturnValue(throwError(() => new Error('down')));
+    await render();
+
+    expect(columnCards('SAVED')).toEqual(['Acme', 'Globex']);
+    expect(page.querySelector('.score')).toBeNull();
+    expect(page.querySelector('.stats dd:nth-of-type(1)')).not.toBeNull();
+  });
+});
+
+describe('isoWeek', () => {
+  it('follows ISO-8601 at the year boundaries', () => {
+    expect(isoWeek(new Date(2026, 0, 1))).toBe(1);
+    expect(isoWeek(new Date(2026, 11, 31))).toBe(53);
+    expect(isoWeek(new Date(2027, 0, 1))).toBe(53);
+    expect(isoWeek(new Date(2026, 10, 23))).toBe(48);
   });
 });

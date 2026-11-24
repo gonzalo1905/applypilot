@@ -96,7 +96,7 @@
                   [cdkDragData]="card"
                   tabindex="0"
                   role="button"
-                  [attr.aria-label]="'Edit ' + card.roleTitle + ' at ' + card.company"
+                  [attr.aria-label]="cardLabel(card)"
                   (click)="openEdit(card)"
                   (keydown.enter)="openEdit(card)"
                 >
@@ -108,7 +108,8 @@
                       <h3>{{ card.company }}</h3>
                       <p class="role">{{ card.roleTitle }}</p>
                     </div>
-                    @if (scoreOf(card); as score) {
+                    @let score = scoreOf(card);
+                    @if (score !== null) {
                       <span class="score" [attr.title]="'Match score ' + score + ' of 100'">
                         {{ score }}
                       </span>

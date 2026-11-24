@@ -58,6 +58,13 @@ export class Board {
     return this.insights()?.matchScores[application.id] ?? null;
   }
 
+  /** The card is a button, so its label must carry everything a screen reader should hear. */
+  protected cardLabel(application: JobApplication): string {
+    const score = this.scoreOf(application);
+    const label = `Edit ${application.roleTitle} at ${application.company}`;
+    return score === null ? label : `${label}, match score ${score} of 100`;
+  }
+
   protected openCreate(status: ApplicationStatus = 'SAVED'): void {
     this.dialog.set({ application: null, status });
   }
