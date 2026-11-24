@@ -1,13 +1,26 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
-    <title>ApplyPilot</title>
+    <title>ApplyPilot · AI co-pilot for your job search</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="light dark" />
-    <meta name="description" content="ApplyPilot: an AI-assisted job-application tracker." />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#0b0d10" />
+    <meta
+      name="description"
+      content="ApplyPilot: track every job application on a Kanban board and let an AI crew match your CV and draft honest cover letters."
+    />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <script>
+      // Applies the saved theme before the first paint, so a light-theme user never sees a
+      // dark flash. Kept tiny and in sync with ThemeService (key and values).
+      try {
+        if (localStorage.getItem('applypilot.theme') === 'light') {
+          document.documentElement.dataset.theme = 'light';
+        }
+      } catch {}
+    </script>
   </head>
   <body>
     <app-root></app-root>
