@@ -2,11 +2,14 @@ import { Component, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toErrorMessage } from '../../core/api-error';
+import { Logo } from '../../core/brand/logo';
+import { Radar } from '../../core/brand/radar';
+import { ThemeToggle } from '../../core/theme/theme-toggle';
 import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, Logo, Radar, ThemeToggle],
   templateUrl: './login.html',
 })
 export class Login {

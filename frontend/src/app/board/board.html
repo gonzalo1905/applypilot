@@ -3,11 +3,35 @@
 
   <main class="board-main">
     <div class="board-heading">
-      <div>
+      <div class="heading-copy">
+        <p class="eyebrow">Flight plan · week {{ week }}</p>
         <h1>Your applications</h1>
-        <p>Track every application from first interest to final answer.</p>
       </div>
-      <button class="btn btn-primary" type="button" (click)="openCreate()">Add application</button>
+
+      <dl class="stats">
+        <div>
+          <dt>Active</dt>
+          <dd>{{ store.loading() ? '–' : active() }}</dd>
+        </div>
+        <div>
+          <dt>Best match</dt>
+          <dd>{{ bestMatch() ?? '–' }}</dd>
+        </div>
+        <div>
+          <dt>AI calls left</dt>
+          <dd>
+            @if (insights(); as figures) {
+              {{ figures.aiCallsLeft }}<span>/{{ figures.aiDailyLimit }}</span>
+            } @else {
+              –
+            }
+          </dd>
+        </div>
+      </dl>
+
+      <button class="btn btn-primary" type="button" (click)="openCreate()">
+        <span aria-hidden="true">+</span> Add application
+      </button>
     </div>
 
     @if (store.actionError(); as message) {
@@ -18,9 +42,22 @@
     }
 
     @if (store.loading()) {
-      <p class="board-status" role="status">Loading your applications…</p>
+      <div class="board board-skeleton" role="status">
+        <span class="visually-hidden">Loading your applications…</span>
+        @for (cards of skeletonColumns; track $index) {
+          <div class="column" aria-hidden="true">
+            <div class="column-header">
+              <span class="skeleton sk-title"></span>
+            </div>
+            @for (item of cards; track item) {
+              <div class="skeleton sk-card"></div>
+            }
+          </div>
+        }
+      </div>
     } @else if (store.loadError(); as message) {
       <div class="board-status" role="alert">
+        <span class="status-icon" aria-hidden="true">!</span>
         <p>{{ message }}</p>
         <button class="btn btn-ghost" type="button" (click)="store.load()">Try again</button>
       </div>
@@ -63,25 +100,38 @@
                   (click)="openEdit(card)"
                   (keydown.enter)="openEdit(card)"
                 >
-                  <h3>{{ card.company }}</h3>
-                  <p class="role">{{ card.roleTitle }}</p>
+                  <div class="card-top">
+                    <span class="logo-chip" aria-hidden="true">{{
+                      card.company.charAt(0).toUpperCase()
+                    }}</span>
+                    <div class="card-main">
+                      <h3>{{ card.company }}</h3>
+                      <p class="role">{{ card.roleTitle }}</p>
+                    </div>
+                    @if (scoreOf(card); as score) {
+                      <span class="score" [attr.title]="'Match score ' + score + ' of 100'">
+                        {{ score }}
+                      </span>
+                    }
+                  </div>
                   <p class="meta">
                     @if (card.location; as location) {
-                      <span>{{ location }}</span>
+                      <span class="tag">{{ location }}</span>
                     }
                     @if (card.workMode; as workMode) {
-                      <span class="chip">{{ workModeLabels[workMode] }}</span>
+                      <span class="tag">{{ workModeLabels[workMode] }}</span>
                     }
                     @if (card.appliedAt; as appliedAt) {
-                      <span>Applied {{ appliedAt | date: 'MMM d' }}</span>
+                      <span class="when">Applied {{ appliedAt | date: 'MMM d' }}</span>
                     } @else {
-                      <span>Added {{ card.createdAt | date: 'MMM d' }}</span>
+                      <span class="when">Added {{ card.createdAt | date: 'MMM d' }}</span>
                     }
                   </p>
                 </article>
               } @empty {
                 <div class="column-empty">
-                  <p class="empty-title">No applications yet</p>
+                  <span class="empty-icon" aria-hidden="true"></span>
+                  <p class="empty-title">{{ column.emptyTitle }}</p>
                   <p>{{ column.emptyHint }}</p>
                 </div>
               }

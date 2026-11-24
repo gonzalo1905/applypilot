@@ -1,18 +1,21 @@
 <header class="topbar">
-  <a class="brand" routerLink="/board">
-    <span class="brand-mark" aria-hidden="true">AP</span> ApplyPilot
-  </a>
+  <a class="home" routerLink="/board" aria-label="ApplyPilot board"><app-logo /></a>
 
   <nav class="nav" aria-label="Main">
-    <a routerLink="/board" routerLinkActive="active">Board</a>
-    <a routerLink="/profile" routerLinkActive="active">Profile</a>
+    <a routerLink="/board" routerLinkActive="active" ariaCurrentWhenActive="page">Board</a>
+    <a routerLink="/profile" routerLinkActive="active" ariaCurrentWhenActive="page">Profile</a>
   </nav>
 
   <div class="account">
+    <app-theme-toggle />
     @if (user(); as currentUser) {
-      <span class="avatar" aria-hidden="true">{{ initials() }}</span>
-      <span class="user-name" data-testid="user-name">{{ currentUser.fullName }}</span>
+      <span class="who">
+        <span class="avatar" aria-hidden="true">{{ initials() }}</span>
+        <span class="user-name" data-testid="user-name">{{ currentUser.fullName }}</span>
+      </span>
     }
-    <button class="btn btn-ghost" type="button" (click)="logout()">Log out</button>
+    <button class="btn btn-ghost btn-sm" type="button" data-testid="logout" (click)="logout()">
+      Log out
+    </button>
   </div>
 </header>

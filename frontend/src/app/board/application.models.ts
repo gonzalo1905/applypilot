@@ -45,16 +45,42 @@ export interface MoveApplicationRequest {
 export interface BoardColumnDefinition {
   status: ApplicationStatus;
   title: string;
+  emptyTitle: string;
   emptyHint: string;
 }
 
 /** The Kanban columns, in pipeline order. */
 export const BOARD_COLUMNS: readonly BoardColumnDefinition[] = [
-  { status: 'SAVED', title: 'Saved', emptyHint: 'Roles you want to apply to.' },
-  { status: 'APPLIED', title: 'Applied', emptyHint: 'Applications you have sent.' },
-  { status: 'INTERVIEW', title: 'Interview', emptyHint: 'Processes with interviews scheduled.' },
-  { status: 'OFFER', title: 'Offer', emptyHint: 'Offers you have received.' },
-  { status: 'REJECTED', title: 'Rejected', emptyHint: 'Closed processes, kept for reference.' },
+  {
+    status: 'SAVED',
+    title: 'Saved',
+    emptyTitle: 'Nothing saved yet',
+    emptyHint: 'Roles you want to apply to.',
+  },
+  {
+    status: 'APPLIED',
+    title: 'Applied',
+    emptyTitle: 'No applications sent',
+    emptyHint: 'Applications you have sent.',
+  },
+  {
+    status: 'INTERVIEW',
+    title: 'Interview',
+    emptyTitle: 'No interviews yet',
+    emptyHint: 'Processes with interviews scheduled.',
+  },
+  {
+    status: 'OFFER',
+    title: 'Offer',
+    emptyTitle: 'No offers yet',
+    emptyHint: 'They will land here.',
+  },
+  {
+    status: 'REJECTED',
+    title: 'Rejected',
+    emptyTitle: 'Nothing closed',
+    emptyHint: 'Closed processes, kept for reference.',
+  },
 ];
 
 export const WORK_MODE_LABELS: Record<WorkMode, string> = {

@@ -1,0 +1,192 @@
+<div class="landing">
+  <header class="site-header">
+    <a routerLink="/" aria-label="ApplyPilot home"><app-logo /></a>
+    <nav class="site-nav" aria-label="Sections">
+      <a href="#features">Features</a>
+      <a href="#crew">AI crew</a>
+      <a [href]="repoUrl" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+    <div class="site-actions">
+      <app-theme-toggle />
+      @if (signedIn()) {
+        <a class="btn btn-ghost btn-sm" routerLink="/board">Open board</a>
+      } @else {
+        <a class="btn btn-ghost btn-sm" routerLink="/login">Sign in</a>
+      }
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">
+          <span class="live-dot" aria-hidden="true"></span> AI co-pilot for your job search
+        </p>
+        <h1>Every application, <span>cleared for landing.</span></h1>
+        <p class="lead">
+          Track your job search on one board. An AI crew matches your CV to each posting with quotes
+          as proof, and drafts a cover letter that only claims what your CV can back up.
+        </p>
+
+        <div class="hero-ctas">
+          <button
+            class="btn btn-primary btn-lg"
+            type="button"
+            [disabled]="startingDemo()"
+            (click)="tryDemo()"
+          >
+            @if (startingDemo()) {
+              <span class="spinner" aria-hidden="true"></span> Boarding…
+            } @else if (signedIn()) {
+              Open your board <span aria-hidden="true">→</span>
+            } @else {
+              Try the demo <span aria-hidden="true">→</span>
+            }
+          </button>
+          @if (!signedIn()) {
+            <a class="btn btn-secondary btn-lg" routerLink="/login">Sign in</a>
+          }
+        </div>
+        @if (demoError(); as message) {
+          <p class="alert-error" role="alert">{{ message }}</p>
+        }
+        <p class="hero-note">
+          No sign-up · fictitious data · free server, first load can take a minute
+        </p>
+      </div>
+
+      <div class="preview" aria-hidden="true">
+        <div class="preview-bar">
+          <span></span><span></span><span></span>
+          <p>applypilot / board</p>
+        </div>
+        <div class="preview-head">
+          <div>
+            <p class="eyebrow">Flight plan</p>
+            <p class="preview-title">Your applications</p>
+          </div>
+          <div class="preview-stats">
+            <p><b>4</b><span>active</span></p>
+            <p><b>83</b><span>best match</span></p>
+          </div>
+        </div>
+        <div class="preview-board">
+          @for (column of preview; track column.status) {
+            <div class="preview-col" [attr.data-status]="column.status">
+              <p class="preview-col-head">
+                <i></i>{{ column.title }}<span>{{ column.cards.length }}</span>
+              </p>
+              @for (card of column.cards; track card.company) {
+                <div class="preview-card">
+                  <div class="preview-card-top">
+                    <span class="chip-logo">{{ card.initial }}</span>
+                    <div>
+                      <p class="pc-company">{{ card.company }}</p>
+                      <p class="pc-role">{{ card.role }}</p>
+                    </div>
+                    @if (card.score !== null) {
+                      <span class="pc-score">{{ card.score }}</span>
+                    }
+                  </div>
+                  <div class="pc-tags">
+                    @for (tag of card.tags; track tag) {
+                      <span class="tag">{{ tag }}</span>
+                    }
+                  </div>
+                </div>
+              } @empty {
+                <div class="preview-empty">They will land here.</div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="features" aria-labelledby="features-title">
+      <p class="eyebrow">What it does</p>
+      <h2 id="features-title">From "saved" to "offer", with proof at every step</h2>
+      <div class="feature-grid">
+        <article class="feature">
+          <span class="feature-num">01</span>
+          <h3>Track</h3>
+          <p>
+            A Kanban board for Saved, Applied, Interview, Offer and Rejected, with drag and drop.
+          </p>
+        </article>
+        <article class="feature">
+          <span class="feature-num">02</span>
+          <h3>Analyze</h3>
+          <p>
+            Paste a posting and get role, seniority, required skills, work mode and salary,
+            validated against a schema.
+          </p>
+        </article>
+        <article class="feature">
+          <span class="feature-num">03</span>
+          <h3>Match</h3>
+          <p>
+            Every matched skill comes with a quote from your CV. Quotes that are not in it do not
+            count, and the score is computed in code.
+          </p>
+        </article>
+        <article class="feature">
+          <span class="feature-num">04</span>
+          <h3>Write</h3>
+          <p>
+            A cover letter in the posting's language, checked by a reviewer that sends unsupported
+            claims back for revision.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="crew" class="crew" aria-labelledby="crew-title">
+      <div class="crew-copy">
+        <p class="eyebrow">The AI crew</p>
+        <h2 id="crew-title">Four agents, one traced flight</h2>
+        <p>
+          The agents never talk to each other directly. An orchestrator passes typed, validated
+          records between them, and every step is stored with its source, tokens and latency.
+        </p>
+      </div>
+      <ol class="crew-steps">
+        <li>
+          <span class="mono">01 · Extractor</span>
+          <p>Reads the posting into structured requirements.</p>
+        </li>
+        <li>
+          <span class="mono">02 · Matcher</span>
+          <p>Searches your CV through tool calls and quotes its evidence.</p>
+        </li>
+        <li>
+          <span class="mono">03 · Writer</span>
+          <p>Drafts the letter from verified facts only.</p>
+        </li>
+        <li>
+          <span class="mono">04 · Reviewer</span>
+          <p>Approves it, or sends it back, at most twice.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section class="cta">
+      <h2>Ready for take-off?</h2>
+      <p>Open the demo board and run a match on a real posting. It takes one click.</p>
+      <button
+        class="btn btn-primary btn-lg"
+        type="button"
+        [disabled]="startingDemo()"
+        (click)="tryDemo()"
+      >
+        {{ signedIn() ? 'Open your board' : 'Try the demo' }}
+      </button>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <app-logo />
+    <p>Built with Spring Boot 4, Java 21, Spring AI, PostgreSQL and Angular 22.</p>
+    <a [href]="repoUrl" target="_blank" rel="noopener">Source on GitHub</a>
+  </footer>
+</div>

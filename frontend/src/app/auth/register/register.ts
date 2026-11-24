@@ -2,11 +2,14 @@ import { Component, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { toErrorMessage, toFieldErrors } from '../../core/api-error';
+import { Logo } from '../../core/brand/logo';
+import { Radar } from '../../core/brand/radar';
+import { ThemeToggle } from '../../core/theme/theme-toggle';
 import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-register',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, Logo, Radar, ThemeToggle],
   templateUrl: './register.html',
 })
 export class Register {

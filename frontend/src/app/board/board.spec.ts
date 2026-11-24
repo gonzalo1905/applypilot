@@ -7,6 +7,7 @@ import { User } from '../auth/auth.models';
 import { AuthService } from '../auth/auth.service';
 import { ApplicationStatus, JobApplication } from './application.models';
 import { ApplicationsApi } from './applications.api';
+import { InsightsApi } from './insights.api';
 import { Board } from './board';
 import { card } from './testing/application.fixtures';
 
@@ -33,6 +34,7 @@ describe('Board', () => {
     logout: ReturnType<typeof vi.fn>;
   };
   let api: { list: ReturnType<typeof vi.fn>; move: ReturnType<typeof vi.fn> };
+  let insightsApi: { get: ReturnType<typeof vi.fn> };
   let fixture: ComponentFixture<Board>;
   let page: HTMLElement;
 
@@ -43,6 +45,7 @@ describe('Board', () => {
         provideRouter([]),
         { provide: AuthService, useValue: auth },
         { provide: ApplicationsApi, useValue: api },
+        { provide: InsightsApi, useValue: insightsApi },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(Board);
@@ -60,6 +63,9 @@ describe('Board', () => {
   beforeEach(() => {
     auth = { user: signal<User | null>(user), refreshUser: vi.fn(() => of(user)), logout: vi.fn() };
     api = { list: vi.fn(() => of([globex, initech, acme])), move: vi.fn(() => of(acme)) };
+    insightsApi = {
+      get: vi.fn(() => of({ matchScores: { acme: 83 }, aiCallsLeft: 7, aiDailyLimit: 10 })),
+    };
   });
 
   it('shows the five columns in pipeline order with their cards', async () => {
@@ -90,7 +96,7 @@ describe('Board', () => {
 
     expect(page.querySelector('.column[data-status="SAVED"] .column-empty')).toBeNull();
     expect(page.querySelector('.column[data-status="OFFER"] .column-empty')?.textContent).toContain(
-      'No applications yet',
+      'No offers yet',
     );
   });
 
@@ -100,7 +106,7 @@ describe('Board', () => {
     expect(page.querySelector('[data-testid="user-name"]')?.textContent).toBe('Ada Lovelace');
     expect(auth.refreshUser).toHaveBeenCalled();
 
-    page.querySelector<HTMLButtonElement>('app-topbar button')?.click();
+    page.querySelector<HTMLButtonElement>('[data-testid="logout"]')?.click();
 
     expect(auth.logout).toHaveBeenCalledTimes(1);
   });

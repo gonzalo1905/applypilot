@@ -149,8 +149,8 @@ describe('Login', () => {
   it('opens the board in the demo account without a password', async () => {
     await render();
 
-    const demo = Array.from(page.querySelectorAll('button')).find(
-      (button) => button.textContent?.trim() === 'Try the demo',
+    const demo = Array.from(page.querySelectorAll('button')).find((button) =>
+      button.textContent?.trim().startsWith('Try the demo'),
     )!;
     demo.click();
     await fixture.whenStable();
@@ -177,7 +177,7 @@ describe('Login', () => {
     );
 
     Array.from(page.querySelectorAll('button'))
-      .find((button) => button.textContent?.trim() === 'Try the demo')!
+      .find((button) => button.textContent?.trim().startsWith('Try the demo'))!
       .click();
     await fixture.whenStable();
 
